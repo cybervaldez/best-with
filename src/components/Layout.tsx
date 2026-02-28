@@ -222,7 +222,6 @@ export default function Layout({ song, songs, selectedIndex, onSelectSong }: Pro
             songSignature={signature}
             headphoneSignatures={hpSignatures}
             experienceNotes={experienceNotes}
-            customCategories={customCategories}
             onEditExperience={setEditExpTarget}
             onSetHpSignature={setHpModalTarget}
           />

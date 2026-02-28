@@ -1,4 +1,4 @@
-import type { Headphone, HeadphoneSignature, SongSignature, ExperienceNote, CustomCategoryDef } from '../data/types';
+import type { Headphone, HeadphoneSignature, SongSignature, ExperienceNote } from '../data/types';
 import ExperienceCard, { ExperienceCardNeedsSig } from './ExperienceCard';
 
 interface Props {
@@ -6,14 +6,13 @@ interface Props {
   songSignature: SongSignature | null;
   headphoneSignatures: Record<string, HeadphoneSignature>;
   experienceNotes: Record<string, ExperienceNote | null>;
-  customCategories?: CustomCategoryDef[];
   onEditExperience: (hp: Headphone) => void;
   onSetHpSignature: (hp: Headphone) => void;
 }
 
 export default function ExperienceMap({
   headphones, songSignature, headphoneSignatures, experienceNotes,
-  customCategories, onEditExperience, onSetHpSignature,
+  onEditExperience, onSetHpSignature,
 }: Props) {
   // Disabled state — no song signature
   if (!songSignature) {
@@ -77,7 +76,6 @@ export default function ExperienceMap({
             hpSignature={hpSig}
             songSignature={songSignature}
             storedNote={experienceNotes[hp.id] ?? null}
-            customCategories={customCategories}
             onEdit={() => onEditExperience(hp)}
           />
         );

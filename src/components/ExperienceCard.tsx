@@ -1,21 +1,19 @@
-import type { Headphone, HeadphoneSignature, SongSignature, ExperienceNote, CustomCategoryDef } from '../data/types';
+import type { Headphone, HeadphoneSignature, SongSignature, ExperienceNote } from '../data/types';
 import { deriveExperienceNote } from '../data/experienceDerive';
 import StrengthBars from './StrengthBars';
-import { CategoryBadgeGroup } from './CategoryBadge';
 
 interface Props {
   headphone: Headphone;
   hpSignature: HeadphoneSignature;
   songSignature: SongSignature;
   storedNote: ExperienceNote | null;
-  customCategories?: CustomCategoryDef[];
   onEdit: () => void;
 }
 
 export default function ExperienceCard({
-  headphone, hpSignature, songSignature, storedNote, customCategories, onEdit,
+  headphone, hpSignature, songSignature, storedNote, onEdit,
 }: Props) {
-  // Use stored note if available, otherwise auto-derive from signatures
+  // Use stored note if available, otherwise auto-derive from song+HP signature comparison
   const note: ExperienceNote = storedNote ?? deriveExperienceNote(hpSignature.bars, songSignature.bars);
 
   return (
@@ -25,16 +23,10 @@ export default function ExperienceCard({
     >
       <div className="hp-header">
         <div className="hp-name-row">
-          <div className="hp-icon">{'\u{1F3A7}'}</div>
+          <span className={`hp-dot ${headphone.dotColor}`} />
           <span className="hp-name">{headphone.name}</span>
         </div>
         <div className="hp-header-right">
-          <CategoryBadgeGroup
-            primary={hpSignature.category}
-            secondary={hpSignature.secondaryCategories}
-            customCategories={customCategories}
-          />
-          <span className="hp-specs">{headphone.specs}</span>
           <button
             className="exp-edit-btn"
             onClick={onEdit}
@@ -71,11 +63,8 @@ export function ExperienceCardNeedsSig({ headphone, onSetSignature }: NeedsSigPr
     >
       <div className="hp-header">
         <div className="hp-name-row">
-          <div className="hp-icon">{'\u{1F3A7}'}</div>
+          <span className={`hp-dot ${headphone.dotColor}`} />
           <span className="hp-name">{headphone.name}</span>
-        </div>
-        <div className="hp-header-right">
-          <span className="hp-specs">{headphone.specs}</span>
         </div>
       </div>
       <div className="exp-needs-sig-message">
