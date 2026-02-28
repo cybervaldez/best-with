@@ -3,7 +3,7 @@ import type { SpectrumSlot } from '../data/spectrumBuilder';
 import ExperienceCard, { ExperienceCardNeedsSig } from './ExperienceCard';
 import CategoryBadge from './CategoryBadge';
 
-type ViewMode = 'spectrum' | 'collection';
+type ViewMode = 'palette' | 'mine';
 
 interface Props {
   headphones: Headphone[];
@@ -35,13 +35,13 @@ export default function ExperienceMap({
           <span>experience map</span>
           <div className="exp-view-toggle">
             <button
-              className={`exp-toggle-btn ${viewMode === 'spectrum' ? 'active' : ''}`}
-              onClick={() => onToggleView('spectrum')}
-            >Spectrum</button>
+              className={`exp-toggle-btn ${viewMode === 'palette' ? 'active' : ''}`}
+              onClick={() => onToggleView('palette')}
+            >Palette</button>
             <button
-              className={`exp-toggle-btn ${viewMode === 'collection' ? 'active' : ''}`}
-              onClick={() => onToggleView('collection')}
-            >Collection</button>
+              className={`exp-toggle-btn ${viewMode === 'mine' ? 'active' : ''}`}
+              onClick={() => onToggleView('mine')}
+            >Mine</button>
           </div>
         </div>
         <div className="exp-disabled" data-testid="exp-disabled">
@@ -61,17 +61,17 @@ export default function ExperienceMap({
         <span>experience map</span>
         <div className="exp-view-toggle">
           <button
-            className={`exp-toggle-btn ${viewMode === 'spectrum' ? 'active' : ''}`}
-            onClick={() => onToggleView('spectrum')}
+            className={`exp-toggle-btn ${viewMode === 'palette' ? 'active' : ''}`}
+            onClick={() => onToggleView('palette')}
           >Spectrum</button>
           <button
-            className={`exp-toggle-btn ${viewMode === 'collection' ? 'active' : ''}`}
-            onClick={() => onToggleView('collection')}
+            className={`exp-toggle-btn ${viewMode === 'mine' ? 'active' : ''}`}
+            onClick={() => onToggleView('mine')}
           >Collection</button>
         </div>
       </div>
 
-      {viewMode === 'collection' ? (
+      {viewMode === 'mine' ? (
         // ── Collection view (existing behavior) ──
         headphones.length === 0 ? (
           <div className="exp-disabled" data-testid="exp-empty-collection">
@@ -107,21 +107,12 @@ export default function ExperienceMap({
         )
       ) : (
         // ── Spectrum view ──
-        spectrumSlots.map((slot) => {
-          // Empty category — no preset available
-          if (slot.source === 'none' || !slot.presetId) {
-            return (
-              <div key={slot.category} className="spectrum-slot spectrum-slot-empty">
-                <div className="spectrum-slot-header">
-                  <CategoryBadge category={slot.category} />
-                  <span className="spectrum-slot-coming-soon">Coming Soon</span>
-                </div>
-              </div>
-            );
-          }
-
-          const hp = spectrumHeadphones[slot.presetId];
-          const hpSig = spectrumSignatures[slot.presetId];
+        spectrumSlots
+          .filter((slot) => slot.source !== 'none' && slot.presetId)
+          .map((slot) => {
+          const id = slot.presetId!;
+          const hp = spectrumHeadphones[id];
+          const hpSig = spectrumSignatures[id];
           const hasAlternatives = slot.alternatives.length > 0;
 
           if (!hp) return null;
@@ -149,7 +140,7 @@ export default function ExperienceMap({
                   headphone={hp}
                   hpSignature={hpSig}
                   songSignature={songSignature}
-                  storedNote={experienceNotes[slot.presetId] ?? null}
+                  storedNote={experienceNotes[id] ?? null}
                   onEdit={() => onEditExperience(hp)}
                 />
               ) : (

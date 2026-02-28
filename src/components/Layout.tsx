@@ -47,7 +47,7 @@ export default function Layout({ song, songs, selectedIndex, onSelectSong }: Pro
   const [editExpTarget, setEditExpTarget] = useState<Headphone | null>(null);
 
   // Spectrum view state
-  const [expViewMode, setExpViewMode] = useState<'spectrum' | 'collection'>('spectrum');
+  const [expViewMode, setExpViewMode] = useState<'palette' | 'mine'>('palette');
   const [spectrumSelections, setSpectrumSelections] = useState<Record<string, string>>(
     () => loadSpectrumSelections(),
   );
