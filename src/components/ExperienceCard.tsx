@@ -1,5 +1,4 @@
 import type { Headphone, HeadphoneSignature, SongSignature, ExperienceNote } from '../data/types';
-import { deriveExperienceNote } from '../data/experienceDerive';
 import StrengthBars from './StrengthBars';
 
 interface Props {
@@ -11,11 +10,8 @@ interface Props {
 }
 
 export default function ExperienceCard({
-  headphone, hpSignature, songSignature, storedNote, onEdit,
+  headphone, hpSignature, storedNote, onEdit,
 }: Props) {
-  // Use stored note if available, otherwise auto-derive from song+HP signature comparison
-  const note: ExperienceNote = storedNote ?? deriveExperienceNote(hpSignature.bars, songSignature.bars);
-
   return (
     <div
       className="experience-card"
@@ -38,13 +34,22 @@ export default function ExperienceCard({
           </button>
         </div>
       </div>
-      <div className="hp-tagline">{'\u201C'}{note.tagline}{'\u201D'}</div>
-      <div className="hp-description">{note.description}</div>
-      <StrengthBars bars={hpSignature.bars} />
-      {note.source !== 'auto' && (
-        <div className="exp-source-indicator" data-testid={`exp-source-${headphone.id}`}>
-          {note.source === 'llm' ? 'AI-enriched' : 'Custom'}
-        </div>
+      {storedNote ? (
+        <>
+          <div className="hp-tagline">{'\u201C'}{storedNote.tagline}{'\u201D'}</div>
+          <div className="hp-description">{storedNote.description}</div>
+          <StrengthBars bars={hpSignature.bars} />
+          <div className="exp-source-indicator" data-testid={`exp-source-${headphone.id}`}>
+            {storedNote.source === 'llm' ? 'AI-enriched' : 'Custom'}
+          </div>
+        </>
+      ) : (
+        <>
+          <StrengthBars bars={hpSignature.bars} />
+          <div className="exp-needs-edit" onClick={onEdit}>
+            Edit experience to describe how this song sounds on {headphone.name}
+          </div>
+        </>
       )}
     </div>
   );
