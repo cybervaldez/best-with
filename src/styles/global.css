@@ -725,7 +725,68 @@ body {
 }
 
 .signature-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   margin-bottom: var(--space-4);
+}
+
+.sig-edit-btn {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  font-size: var(--text-sm);
+  padding: var(--space-1);
+  border-radius: var(--radius-sm);
+  opacity: 0;
+  transition: opacity var(--duration-micro) var(--ease-exit), color var(--duration-micro) var(--ease-exit);
+}
+
+.signature-card:hover .sig-edit-btn {
+  opacity: 1;
+}
+
+.sig-edit-btn:hover {
+  color: var(--color-accent-purple);
+}
+
+/* Song Sections */
+.signature-sections {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin-bottom: var(--space-4);
+  padding: var(--space-2) var(--space-3);
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.signature-section {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  font-size: var(--text-xs);
+}
+
+.sig-section-time {
+  color: var(--color-text-muted);
+  font-family: var(--font-heading);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+  min-width: 5.5em;
+}
+
+.sig-section-label {
+  color: var(--color-text-secondary);
+  font-family: var(--font-heading);
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.sig-section-desc {
+  color: var(--color-text-muted);
 }
 
 .signature-tags {

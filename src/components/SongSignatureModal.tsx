@@ -5,13 +5,15 @@ import { parseSongSignatureJSON } from '../data/songSignatureStorage';
 
 interface Props {
   song: Song;
+  existingSignature?: SongSignature | null;
   onSave: (signature: SongSignature) => void;
   onClose: () => void;
 }
 
 type Step = 'copy' | 'paste' | 'success';
 
-export default function SongSignatureModal({ song, onSave, onClose }: Props) {
+export default function SongSignatureModal({ song, existingSignature, onSave, onClose }: Props) {
+  const isUpdate = !!existingSignature;
   const [step, setStep] = useState<Step>('copy');
   const [copied, setCopied] = useState(false);
   const [jsonInput, setJsonInput] = useState('');
@@ -55,7 +57,7 @@ export default function SongSignatureModal({ song, onSave, onClose }: Props) {
 
         {step === 'copy' && (
           <>
-            <h2 className="modal-title">Get Sound Signature</h2>
+            <h2 className="modal-title">{isUpdate ? 'Update Sound Signature' : 'Get Sound Signature'}</h2>
             <p className="modal-description">
               Copy this prompt and paste it into any LLM (ChatGPT, Claude, etc.)
             </p>
@@ -107,7 +109,7 @@ export default function SongSignatureModal({ song, onSave, onClose }: Props) {
                   onClick={handleSave}
                   disabled={!validation?.valid}
                 >
-                  Save Sound Signature
+                  {isUpdate ? 'Update Signature' : 'Save Sound Signature'}
                 </button>
               </div>
             </div>
@@ -116,7 +118,7 @@ export default function SongSignatureModal({ song, onSave, onClose }: Props) {
 
         {step === 'success' && savedSignature && (
           <>
-            <h2 className="modal-title">Signature Saved</h2>
+            <h2 className="modal-title">{isUpdate ? 'Signature Updated' : 'Signature Saved'}</h2>
             <div className="modal-preview-tags">
               {savedSignature.tags.map((tag) => (
                 <span className="tag" key={tag}>{tag}</span>

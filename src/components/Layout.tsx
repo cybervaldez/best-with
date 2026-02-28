@@ -214,7 +214,7 @@ export default function Layout({ song, songs, selectedIndex, onSelectSong }: Pro
             signature={signature}
             onGetSignature={() => setShowModal(true)}
           />
-          {signature && <SongSignatureDisplay signature={signature} />}
+          {signature && <SongSignatureDisplay signature={signature} onEdit={() => setShowModal(true)} />}
         </main>
         <aside className="experience-column">
           <ExperienceMap
@@ -231,6 +231,7 @@ export default function Layout({ song, songs, selectedIndex, onSelectSong }: Pro
       {showModal && (
         <SongSignatureModal
           song={song}
+          existingSignature={signature}
           onSave={handleSaveSignature}
           onClose={() => setShowModal(false)}
         />
