@@ -3,7 +3,6 @@ import { useAuth } from './auth/AuthContext';
 import { fetchLikedSongs, type SpotifyTrack } from './auth/spotify';
 import LoginPage from './components/LoginPage';
 import Layout from './components/Layout';
-import { headphones, experiences } from './data/mock';
 import { Song } from './data/types';
 
 function trackToSong(track: SpotifyTrack): Song {
@@ -72,8 +71,6 @@ export default function App() {
       songs={songs}
       selectedIndex={selectedIndex}
       onSelectSong={setSelectedIndex}
-      experiences={experiences}
-      headphones={headphones}
     />
   );
 }

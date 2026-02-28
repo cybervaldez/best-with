@@ -1,34 +1,49 @@
-import { useState, useEffect, useCallback } from 'react';
-import type { Song, Experience, Headphone, SongSignature, HeadphoneSignature, CategoryRuleSet, FilterMode, CustomCategoryDef } from '../data/types';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import type { Song, Headphone, SongSignature, HeadphoneSignature, ExperienceNote, CategoryRuleSet, FilterMode, CustomCategoryDef } from '../data/types';
 import { loadSongSignature, saveSongSignature } from '../data/songSignatureStorage';
 import { loadHeadphoneSignature, saveHeadphoneSignature } from '../data/headphoneSignatureStorage';
 import { loadCategoryRules, saveCategoryRules, loadFilterMode, saveFilterMode, loadCustomCategories, saveCustomCategories } from '../data/categoryRuleStorage';
 import { deriveCategories } from '../data/headphoneCategory';
+import { loadCollection, addToCollection, removeFromCollection, collectionToHeadphones, migrateFromLegacy } from '../data/collectionStorage';
+import { loadExperienceNote, saveExperienceNote } from '../data/experienceStorage';
+import { PRESET_MAP } from '../data/presets';
 import Sidebar from './Sidebar';
 import SongHeader from './SongHeader';
 import SongSignatureDisplay from './SongSignatureDisplay';
 import SongSignatureModal from './SongSignatureModal';
 import HeadphoneSignatureModal from './HeadphoneSignatureModal';
+import EditExperienceModal from './EditExperienceModal';
+import AddHeadphoneModal from './AddHeadphoneModal';
 import SignatureManager from './SignatureManager';
 import ExperienceMap from './ExperienceMap';
-import CopyActions from './CopyActions';
 
 interface Props {
   song: Song;
   songs: Song[];
   selectedIndex: number;
   onSelectSong: (index: number) => void;
-  experiences: Experience[];
-  headphones: Headphone[];
 }
 
-export default function Layout({ song, songs, selectedIndex, onSelectSong, experiences, headphones }: Props) {
+export default function Layout({ song, songs, selectedIndex, onSelectSong }: Props) {
+  // Collection state — persisted in localStorage
+  const [collectionIds, setCollectionIds] = useState<string[]>(() => {
+    const migrated = migrateFromLegacy();
+    return migrated.length > 0 ? migrated : loadCollection();
+  });
+  const [showAddModal, setShowAddModal] = useState(false);
+
+  const headphones = useMemo(() => collectionToHeadphones(collectionIds), [collectionIds]);
+
   const [signature, setSignature] = useState<SongSignature | null>(null);
   const [showModal, setShowModal] = useState(false);
 
   // Headphone signatures — single source of truth
   const [hpSignatures, setHpSignatures] = useState<Record<string, HeadphoneSignature>>({});
   const [hpModalTarget, setHpModalTarget] = useState<Headphone | null>(null);
+
+  // Experience notes — per song+headphone pair
+  const [experienceNotes, setExperienceNotes] = useState<Record<string, ExperienceNote | null>>({});
+  const [editExpTarget, setEditExpTarget] = useState<Headphone | null>(null);
 
   // Category rules + filter mode + custom categories
   const [categoryRules, setCategoryRules] = useState<CategoryRuleSet>(() => loadCategoryRules());
@@ -76,6 +91,19 @@ export default function Layout({ song, songs, selectedIndex, onSelectSong, exper
     }
     setHpSignatures(loaded);
   }, [headphones]);
+
+  // Load experience notes when song or headphones change
+  useEffect(() => {
+    if (!song.id) {
+      setExperienceNotes({});
+      return;
+    }
+    const notes: Record<string, ExperienceNote | null> = {};
+    for (const hp of headphones) {
+      notes[hp.id] = loadExperienceNote(song.id, hp.id);
+    }
+    setExperienceNotes(notes);
+  }, [song.id, headphones]);
 
   // Re-derive all headphone categories when rules or filter mode change
   const rederiveAll = useCallback((rules: CategoryRuleSet, mode: FilterMode, customCats: CustomCategoryDef[]) => {
@@ -131,6 +159,37 @@ export default function Layout({ song, songs, selectedIndex, onSelectSong, exper
     }
   }
 
+  function handleAddHeadphone(presetId: string) {
+    const newIds = addToCollection(presetId);
+    setCollectionIds([...newIds]);
+    // Initialize with preset baseline signature if no existing signature
+    const preset = PRESET_MAP[presetId];
+    if (preset && !hpSignatures[presetId]) {
+      const customIds = customCategories.map((c) => c.id);
+      const derived = deriveCategories(preset.baseline.bars, categoryRules, filterMode, customIds);
+      const sig: HeadphoneSignature = {
+        tags: [...preset.baseline.tags],
+        bars: [...preset.baseline.bars],
+        category: derived.primary,
+        secondaryCategories: derived.secondary,
+      };
+      saveHeadphoneSignature(presetId, sig);
+      setHpSignatures((prev) => ({ ...prev, [presetId]: sig }));
+    }
+  }
+
+  function handleRemoveHeadphone(presetId: string) {
+    const newIds = removeFromCollection(presetId);
+    setCollectionIds([...newIds]);
+  }
+
+  function handleSaveExperienceNote(note: ExperienceNote) {
+    if (song.id && editExpTarget) {
+      saveExperienceNote(song.id, editExpTarget.id, note);
+      setExperienceNotes((prev) => ({ ...prev, [editExpTarget.id]: note }));
+    }
+  }
+
   return (
     <>
       <div className="ambient-glow" />
@@ -146,6 +205,8 @@ export default function Layout({ song, songs, selectedIndex, onSelectSong, exper
           onChangeFilterMode={handleChangeFilterMode}
           onOpenHpModal={setHpModalTarget}
           onOpenSignatureManager={openSignatureManager}
+          onOpenAddModal={() => setShowAddModal(true)}
+          onRemoveHeadphone={handleRemoveHeadphone}
         />
         <main className="main-content" data-testid="main-content">
           <SongHeader
@@ -156,8 +217,15 @@ export default function Layout({ song, songs, selectedIndex, onSelectSong, exper
           {signature && <SongSignatureDisplay signature={signature} />}
         </main>
         <aside className="experience-column">
-          <ExperienceMap experiences={experiences} headphoneSignatures={hpSignatures} customCategories={customCategories} />
-          <CopyActions song={song} experiences={experiences} />
+          <ExperienceMap
+            headphones={headphones}
+            songSignature={signature}
+            headphoneSignatures={hpSignatures}
+            experienceNotes={experienceNotes}
+            customCategories={customCategories}
+            onEditExperience={setEditExpTarget}
+            onSetHpSignature={setHpModalTarget}
+          />
         </aside>
       </div>
       {showModal && (
@@ -185,6 +253,25 @@ export default function Layout({ song, songs, selectedIndex, onSelectSong, exper
           onChangeRules={handleChangeRules}
           onChangeCustomCategories={handleChangeCustomCategories}
           onClose={closeSignatureManager}
+        />
+      )}
+      {showAddModal && (
+        <AddHeadphoneModal
+          collectionIds={collectionIds}
+          onAdd={handleAddHeadphone}
+          onRemove={handleRemoveHeadphone}
+          onClose={() => setShowAddModal(false)}
+        />
+      )}
+      {editExpTarget && signature && hpSignatures[editExpTarget.id] && (
+        <EditExperienceModal
+          song={song}
+          songSignature={signature}
+          headphone={editExpTarget}
+          hpSignature={hpSignatures[editExpTarget.id]}
+          existingNote={experienceNotes[editExpTarget.id] ?? null}
+          onSave={handleSaveExperienceNote}
+          onClose={() => setEditExpTarget(null)}
         />
       )}
     </>

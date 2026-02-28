@@ -13,6 +13,8 @@ interface Props {
   onChangeFilterMode: (mode: FilterMode) => void;
   onOpenHpModal: (hp: Headphone) => void;
   onOpenSignatureManager: () => void;
+  onOpenAddModal: () => void;
+  onRemoveHeadphone: (id: string) => void;
 }
 
 const themes: { id: ThemeId; label: string }[] = [
@@ -23,7 +25,7 @@ const themes: { id: ThemeId; label: string }[] = [
   { id: 'kid-a', label: 'Kid A' },
 ];
 
-export default function Sidebar({ headphones, songs, selectedIndex, onSelectSong, hpSignatures, customCategories, filterMode, onChangeFilterMode, onOpenHpModal, onOpenSignatureManager }: Props) {
+export default function Sidebar({ headphones, songs, selectedIndex, onSelectSong, hpSignatures, customCategories, filterMode, onChangeFilterMode, onOpenHpModal, onOpenSignatureManager, onOpenAddModal, onRemoveHeadphone }: Props) {
   const { themeId, setThemeId } = useTheme();
 
   return (
@@ -74,6 +76,14 @@ export default function Sidebar({ headphones, songs, selectedIndex, onSelectSong
             />
           )}
           <span className="hp-type">{hp.specs}</span>
+          <button
+            className="collection-item-remove"
+            onClick={(e) => { e.stopPropagation(); onRemoveHeadphone(hp.id); }}
+            title="Remove from collection"
+            aria-label={`Remove ${hp.name}`}
+          >
+            &times;
+          </button>
         </div>
       ))}
 
@@ -100,7 +110,7 @@ export default function Sidebar({ headphones, songs, selectedIndex, onSelectSong
       </div>
 
       <hr className="divider" />
-      <div className="add-hp" data-testid="add-headphone-btn">
+      <div className="add-hp" data-testid="add-headphone-btn" onClick={onOpenAddModal}>
         Add Headphone
       </div>
 

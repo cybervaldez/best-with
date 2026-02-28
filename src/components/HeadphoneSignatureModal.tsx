@@ -4,6 +4,7 @@ import { BAR_LABELS } from '../data/categoryDefaults';
 import { generateHeadphoneSignaturePrompt } from '../data/headphonePromptTemplate';
 import { parseHeadphoneSignatureJSON } from '../data/headphoneSignatureStorage';
 import { deriveCategories, BUILT_IN_PRIORITY } from '../data/headphoneCategory';
+import { PRESET_MAP } from '../data/presets';
 import { CATEGORY_LABELS, CategoryBadgeGroup } from './CategoryBadge';
 import {
   TICK_LABELS, TICK_POSITIONS, BAR_FREQ_SUBTITLES, BAR_DESCRIPTIONS,
@@ -220,6 +221,18 @@ export default function HeadphoneSignatureModal({
     }
   }
 
+  const preset = PRESET_MAP[headphone.id];
+
+  function handleResetToPreset() {
+    if (!preset) return;
+    const newBars: Record<string, number> = {};
+    for (const bar of preset.baseline.bars) {
+      newBars[bar.label] = LEVEL_TO_NUMBER[bar.level] ?? 3;
+    }
+    setBars(newBars);
+    setTags([...preset.baseline.tags]);
+  }
+
   function handleSave() {
     const signature: HeadphoneSignature = {
       tags,
@@ -370,6 +383,11 @@ export default function HeadphoneSignatureModal({
 
             {/* Actions */}
             <div className="modal-actions">
+              {preset && (
+                <button className="btn-modal secondary" onClick={handleResetToPreset} title="Reset bars and tags to preset baseline">
+                  Reset to Preset
+                </button>
+              )}
               <button className="btn-modal secondary" onClick={onClose}>Cancel</button>
               <button className="btn-modal primary" onClick={handleSave} data-testid="hp-sig-save">
                 {existingSignature ? 'Update Signature' : 'Save Signature'}

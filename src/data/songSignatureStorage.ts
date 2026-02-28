@@ -1,4 +1,4 @@
-import type { SongSignature, BarLevel } from './types';
+import type { SongSignature, SongSection, BarLevel } from './types';
 
 const STORAGE_PREFIX = 'song_signature_';
 
@@ -42,12 +42,22 @@ export function parseSongSignatureJSON(raw: string): SongSignature {
     throw new Error('All 6 bar labels must be unique');
   }
 
+  // Parse optional sections (backward-compatible)
+  let sections: SongSection[] | undefined;
+  if (Array.isArray(parsed.sections)) {
+    const parsed_sections = parsed.sections
+      .filter((s: any) => typeof s.time === 'string' && typeof s.label === 'string' && typeof s.description === 'string')
+      .map((s: any) => ({ time: s.time, label: s.label, description: s.description }));
+    if (parsed_sections.length > 0) sections = parsed_sections;
+  }
+
   return {
     tags: parsed.tags,
     bars: parsed.bars.map((b: { label: string; level: BarLevel }) => ({
       label: b.label,
       level: b.level,
     })),
+    ...(sections ? { sections } : {}),
   };
 }
 

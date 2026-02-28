@@ -121,6 +121,7 @@ body {
 .hp-dot.sennheiser { background: var(--color-brand-sennheiser); }
 .hp-dot.sony { background: var(--color-brand-sony); }
 .hp-dot.apple { background: var(--color-brand-apple); }
+.hp-dot.blue { background: #007aff; }
 
 .add-hp {
   display: flex;
@@ -1687,4 +1688,286 @@ body {
 .nav-item:focus-visible,
 .collection-item:focus-visible {
   outline-offset: -2px;
+}
+
+/* ── Add Headphone Modal ── */
+.add-hp-modal {
+  max-width: 600px;
+}
+
+.add-hp-brands {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.add-hp-brand-tab {
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  font-family: var(--font-heading);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  background: transparent;
+  border: 1px solid var(--color-border);
+  transition: all var(--duration-micro) var(--ease-exit);
+}
+
+.add-hp-brand-tab:hover:not(.disabled) {
+  border-color: var(--color-text-muted);
+}
+
+.add-hp-brand-tab.active {
+  background: var(--color-accent-purple);
+  color: #fff;
+  border-color: var(--color-accent-purple);
+}
+
+.add-hp-brand-tab.disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.add-hp-filters {
+  display: flex;
+  gap: var(--space-1);
+  margin-bottom: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.add-hp-filter-pill {
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  font-family: var(--font-heading);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  color: var(--color-text-muted);
+  background: transparent;
+  border: 1px solid var(--color-border);
+  transition: all var(--duration-micro) var(--ease-exit);
+}
+
+.add-hp-filter-pill:hover {
+  border-color: var(--color-text-muted);
+}
+
+.add-hp-filter-pill.active {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--color-text-primary);
+  border-color: var(--color-text-muted);
+}
+
+.add-hp-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-3);
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.add-hp-card {
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--duration-micro) var(--ease-exit);
+  position: relative;
+}
+
+.add-hp-card:hover {
+  border-color: var(--color-accent-purple);
+}
+
+.add-hp-card.in-collection {
+  opacity: 0.6;
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.add-hp-card.in-collection::after {
+  content: '\2713';
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--color-accent-purple);
+}
+
+.add-hp-card-name {
+  font-family: var(--font-heading);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-1);
+}
+
+.add-hp-card-specs {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-2);
+}
+
+.add-hp-card-badges {
+  display: flex;
+  gap: var(--space-1);
+  flex-wrap: wrap;
+}
+
+.add-hp-badge {
+  font-size: 0.6rem;
+  padding: 2px 6px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--color-text-muted);
+  font-family: var(--font-heading);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.add-hp-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: var(--space-6);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+/* Remove button on collection items */
+.collection-item-remove {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  font-size: var(--text-sm);
+  padding: 0 var(--space-1);
+  opacity: 0;
+  transition: opacity var(--duration-micro) var(--ease-exit);
+}
+
+.collection-item:hover .collection-item-remove {
+  opacity: 1;
+}
+
+.collection-item-remove:hover {
+  color: #ef4444;
+}
+
+/* ── Experience Map: Disabled State ── */
+.exp-disabled {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: var(--space-8) var(--space-4);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-lg);
+  opacity: 0.5;
+}
+
+.exp-disabled-icon {
+  font-size: 2rem;
+  margin-bottom: var(--space-3);
+  opacity: 0.4;
+}
+
+.exp-disabled-title {
+  font-family: var(--font-heading);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-1);
+}
+
+.exp-disabled-text {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+/* ── Experience Card: Needs Signature State ── */
+.exp-card-needs-sig {
+  opacity: 0.5;
+}
+
+.exp-needs-sig-message {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-3);
+  font-style: italic;
+}
+
+.exp-set-sig-btn {
+  font-size: var(--text-xs);
+  padding: var(--space-1) var(--space-3);
+}
+
+/* ── Experience Card: Edit Button ── */
+.exp-edit-btn {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  font-size: var(--text-sm);
+  padding: var(--space-1);
+  border-radius: var(--radius-sm);
+  opacity: 0;
+  transition: opacity var(--duration-micro) var(--ease-exit), color var(--duration-micro) var(--ease-exit);
+}
+
+.experience-card:hover .exp-edit-btn {
+  opacity: 1;
+}
+
+.exp-edit-btn:hover {
+  color: var(--color-accent-purple);
+}
+
+/* ── Experience Card: Source Indicator ── */
+.exp-source-indicator {
+  font-size: 0.6rem;
+  font-family: var(--font-heading);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-muted);
+  opacity: 0.6;
+  margin-top: var(--space-2);
+}
+
+/* ── Edit Experience Modal ── */
+.edit-exp-modal {
+  max-width: 640px;
+}
+
+.edit-exp-manual-fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.edit-exp-field-label {
+  font-family: var(--font-heading);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.edit-exp-input {
+  background: var(--color-bg-tertiary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-primary);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  padding: var(--space-2) var(--space-3);
+}
+
+.edit-exp-input:focus {
+  outline: none;
+  border-color: var(--color-accent-purple);
 }
