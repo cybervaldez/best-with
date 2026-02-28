@@ -1,4 +1,4 @@
-import type { ExperienceNote, ExperienceNoteSource } from './types';
+import type { ExperienceNote, ExperienceSectionNote, ExperienceNoteSource } from './types';
 
 const STORAGE_PREFIX = 'experience_';
 
@@ -20,9 +20,19 @@ export function parseExperienceNoteJSON(raw: string): ExperienceNote {
     throw new Error('description must be a non-empty string');
   }
 
+  // Parse optional sections (backward-compatible)
+  let sections: ExperienceSectionNote[] | undefined;
+  if (Array.isArray(parsed.sections)) {
+    const valid = parsed.sections
+      .filter((s: any) => typeof s.time === 'string' && typeof s.label === 'string' && typeof s.description === 'string')
+      .map((s: any) => ({ time: s.time, label: s.label, description: s.description }));
+    if (valid.length > 0) sections = valid;
+  }
+
   return {
     tagline: parsed.tagline.trim(),
     description: parsed.description.trim(),
+    ...(sections ? { sections } : {}),
     source: 'llm' as ExperienceNoteSource,
   };
 }

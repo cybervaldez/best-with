@@ -74,9 +74,16 @@ export interface SongSignature {
 
 export type ExperienceNoteSource = 'auto' | 'llm' | 'manual';
 
+export interface ExperienceSectionNote {
+  time: string;
+  label: string;
+  description: string;
+}
+
 export interface ExperienceNote {
   tagline: string;
   description: string;
+  sections?: ExperienceSectionNote[];
   source: ExperienceNoteSource;
 }
 

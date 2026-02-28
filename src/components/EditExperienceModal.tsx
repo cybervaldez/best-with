@@ -96,6 +96,15 @@ export default function EditExperienceModal({
             <p className="modal-description">
               Copy this prompt and paste it into any LLM to describe how <strong>{song.title}</strong> sounds on <strong>{headphone.name}</strong>.
             </p>
+            {songSignature.sections && songSignature.sections.length > 0 ? (
+              <div className="edit-exp-context-note valid">
+                Song structure included ({songSignature.sections.length} sections)
+              </div>
+            ) : (
+              <div className="edit-exp-context-note missing">
+                No song structure available — update the song's sound signature to include sections for richer results
+              </div>
+            )}
             <textarea className="modal-textarea" readOnly value={prompt} rows={10} />
             <div className="modal-actions" style={{ marginBottom: 'var(--space-4)' }}>
               <button className="btn-modal primary" onClick={handleCopy}>

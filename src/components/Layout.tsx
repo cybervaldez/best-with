@@ -7,6 +7,7 @@ import { deriveCategories } from '../data/headphoneCategory';
 import { loadCollection, addToCollection, removeFromCollection, collectionToHeadphones, migrateFromLegacy } from '../data/collectionStorage';
 import { loadExperienceNote, saveExperienceNote } from '../data/experienceStorage';
 import { PRESET_MAP } from '../data/presets';
+import { buildSpectrum, presetToHeadphone, presetToSignature, loadSpectrumSelections, saveSpectrumSelections } from '../data/spectrumBuilder';
 import Sidebar from './Sidebar';
 import SongHeader from './SongHeader';
 import SongSignatureDisplay from './SongSignatureDisplay';
@@ -44,6 +45,12 @@ export default function Layout({ song, songs, selectedIndex, onSelectSong }: Pro
   // Experience notes — per song+headphone pair
   const [experienceNotes, setExperienceNotes] = useState<Record<string, ExperienceNote | null>>({});
   const [editExpTarget, setEditExpTarget] = useState<Headphone | null>(null);
+
+  // Spectrum view state
+  const [expViewMode, setExpViewMode] = useState<'spectrum' | 'collection'>('spectrum');
+  const [spectrumSelections, setSpectrumSelections] = useState<Record<string, string>>(
+    () => loadSpectrumSelections(),
+  );
 
   // Category rules + filter mode + custom categories
   const [categoryRules, setCategoryRules] = useState<CategoryRuleSet>(() => loadCategoryRules());
@@ -92,18 +99,56 @@ export default function Layout({ song, songs, selectedIndex, onSelectSong }: Pro
     setHpSignatures(loaded);
   }, [headphones]);
 
-  // Load experience notes when song or headphones change
+  // ── Spectrum computed values ──
+  const spectrumSlots = useMemo(
+    () => buildSpectrum(collectionIds, hpSignatures, spectrumSelections),
+    [collectionIds, hpSignatures, spectrumSelections],
+  );
+
+  const spectrumHeadphones = useMemo(() => {
+    const result: Record<string, Headphone> = {};
+    for (const slot of spectrumSlots) {
+      if (slot.presetId) {
+        const hp = presetToHeadphone(slot.presetId);
+        if (hp) result[slot.presetId] = hp;
+      }
+    }
+    return result;
+  }, [spectrumSlots]);
+
+  const spectrumSignatures = useMemo(() => {
+    const result: Record<string, HeadphoneSignature> = {};
+    for (const slot of spectrumSlots) {
+      if (!slot.presetId) continue;
+      if (hpSignatures[slot.presetId]) {
+        result[slot.presetId] = hpSignatures[slot.presetId];
+      } else {
+        const sig = presetToSignature(slot.presetId);
+        if (sig) result[slot.presetId] = sig;
+      }
+    }
+    return result;
+  }, [spectrumSlots, hpSignatures]);
+
+  // Load experience notes for collection + visible spectrum headphones
   useEffect(() => {
     if (!song.id) {
       setExperienceNotes({});
       return;
     }
-    const notes: Record<string, ExperienceNote | null> = {};
+    const ids = new Set<string>();
     for (const hp of headphones) {
-      notes[hp.id] = loadExperienceNote(song.id, hp.id);
+      ids.add(hp.id);
+    }
+    for (const slot of spectrumSlots) {
+      if (slot.presetId) ids.add(slot.presetId);
+    }
+    const notes: Record<string, ExperienceNote | null> = {};
+    for (const id of ids) {
+      notes[id] = loadExperienceNote(song.id, id);
     }
     setExperienceNotes(notes);
-  }, [song.id, headphones]);
+  }, [song.id, headphones, spectrumSlots]);
 
   // Re-derive all headphone categories when rules or filter mode change
   const rederiveAll = useCallback((rules: CategoryRuleSet, mode: FilterMode, customCats: CustomCategoryDef[]) => {
@@ -190,6 +235,20 @@ export default function Layout({ song, songs, selectedIndex, onSelectSong }: Pro
     }
   }
 
+  function handleRerollSlot(category: string) {
+    const slot = spectrumSlots.find((s) => s.category === category);
+    if (!slot || slot.alternatives.length === 0) return;
+    const next = slot.alternatives[Math.floor(Math.random() * slot.alternatives.length)];
+    const updated = { ...spectrumSelections, [category]: next };
+    setSpectrumSelections(updated);
+    saveSpectrumSelections(updated);
+  }
+
+  // Resolve signature for edit target from either collection or spectrum
+  const editTargetSig = editExpTarget
+    ? (hpSignatures[editExpTarget.id] ?? spectrumSignatures[editExpTarget.id] ?? null)
+    : null;
+
   return (
     <>
       <div className="ambient-glow" />
@@ -224,6 +283,12 @@ export default function Layout({ song, songs, selectedIndex, onSelectSong }: Pro
             experienceNotes={experienceNotes}
             onEditExperience={setEditExpTarget}
             onSetHpSignature={setHpModalTarget}
+            viewMode={expViewMode}
+            onToggleView={setExpViewMode}
+            spectrumSlots={spectrumSlots}
+            spectrumHeadphones={spectrumHeadphones}
+            spectrumSignatures={spectrumSignatures}
+            onRerollSlot={handleRerollSlot}
           />
         </aside>
       </div>
@@ -263,12 +328,12 @@ export default function Layout({ song, songs, selectedIndex, onSelectSong }: Pro
           onClose={() => setShowAddModal(false)}
         />
       )}
-      {editExpTarget && signature && hpSignatures[editExpTarget.id] && (
+      {editExpTarget && signature && editTargetSig && (
         <EditExperienceModal
           song={song}
           songSignature={signature}
           headphone={editExpTarget}
-          hpSignature={hpSignatures[editExpTarget.id]}
+          hpSignature={editTargetSig}
           existingNote={experienceNotes[editExpTarget.id] ?? null}
           onSave={handleSaveExperienceNote}
           onClose={() => setEditExpTarget(null)}

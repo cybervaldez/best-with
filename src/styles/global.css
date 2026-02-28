@@ -1916,6 +1916,128 @@ body {
   color: #ef4444;
 }
 
+/* ── Experience Map: View Toggle ── */
+.exp-view-toggle {
+  display: flex;
+  gap: 0;
+  background: var(--color-bg-tertiary);
+  border-radius: var(--radius-full);
+  padding: 2px;
+  border: 1px solid var(--color-border);
+}
+
+.exp-toggle-btn {
+  font-family: var(--font-heading);
+  font-size: 0.55rem;
+  font-weight: 600;
+  padding: 2px var(--space-3);
+  border: none;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  transition: all var(--duration-micro) var(--ease-exit);
+}
+
+.exp-toggle-btn.active {
+  background: var(--color-accent-purple-20);
+  color: var(--color-accent-purple);
+}
+
+.exp-toggle-btn:hover:not(.active) {
+  color: var(--color-text-secondary);
+}
+
+/* ── Experience Map: Spectrum Slots ── */
+.spectrum-slot {
+  margin-bottom: var(--space-4);
+}
+
+.spectrum-slot-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+  padding: 0 var(--space-1);
+}
+
+.spectrum-slot-header .category-badge {
+  flex-shrink: 0;
+}
+
+.spectrum-slot-name {
+  font-family: var(--font-heading);
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.spectrum-source-pill {
+  font-family: var(--font-heading);
+  font-size: 0.5rem;
+  padding: 1px var(--space-2);
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  flex-shrink: 0;
+}
+
+.spectrum-source-collection {
+  color: var(--color-accent-green, #4ade80);
+  background: rgba(74, 222, 128, 0.1);
+  border: 1px solid rgba(74, 222, 128, 0.2);
+}
+
+.spectrum-source-preset {
+  color: var(--color-text-muted);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--color-border);
+}
+
+.spectrum-dice-btn {
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 2px 6px;
+  cursor: pointer;
+  font-size: 0.7rem;
+  transition: all var(--duration-micro) var(--ease-exit);
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
+.spectrum-dice-btn:hover {
+  border-color: var(--color-accent-purple);
+  color: var(--color-accent-purple);
+  background: var(--color-accent-purple-10, rgba(168, 85, 247, 0.1));
+}
+
+.spectrum-slot-empty {
+  opacity: 0.35;
+}
+
+.spectrum-slot-empty .spectrum-slot-header {
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-bg-card);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.spectrum-slot-coming-soon {
+  font-family: var(--font-heading);
+  font-size: 0.5rem;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-style: italic;
+}
+
 /* ── Experience Map: Disabled State ── */
 .exp-disabled {
   display: flex;
@@ -2044,4 +2166,61 @@ body {
 .edit-exp-input:focus {
   outline: none;
   border-color: var(--color-accent-purple);
+}
+
+/* Experience Card: Section Breakdown */
+.exp-sections {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin-top: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.exp-section {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  font-size: var(--text-xs);
+  line-height: 1.4;
+}
+
+.exp-section-time {
+  color: var(--color-text-muted);
+  font-family: var(--font-heading);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+  min-width: 5.5em;
+}
+
+.exp-section-label {
+  color: var(--color-text-secondary);
+  font-family: var(--font-heading);
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.exp-section-desc {
+  color: var(--color-text-muted);
+}
+
+.edit-exp-context-note {
+  font-size: var(--text-xs);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--space-2);
+}
+
+.edit-exp-context-note.valid {
+  color: #22c55e;
+  background: rgba(34, 197, 94, 0.08);
+}
+
+.edit-exp-context-note.missing {
+  color: var(--color-text-muted);
+  background: rgba(255, 255, 255, 0.03);
+  font-style: italic;
 }

@@ -38,6 +38,17 @@ export default function ExperienceCard({
         <>
           <div className="hp-tagline">{'\u201C'}{storedNote.tagline}{'\u201D'}</div>
           <div className="hp-description">{storedNote.description}</div>
+          {storedNote.sections && storedNote.sections.length > 0 && (
+            <div className="exp-sections">
+              {storedNote.sections.map((s, i) => (
+                <div className="exp-section" key={i}>
+                  <span className="exp-section-time">{s.time}</span>
+                  <span className="exp-section-label">{s.label}</span>
+                  <span className="exp-section-desc">{s.description}</span>
+                </div>
+              ))}
+            </div>
+          )}
           <StrengthBars bars={hpSignature.bars} />
           <div className="exp-source-indicator" data-testid={`exp-source-${headphone.id}`}>
             {storedNote.source === 'llm' ? 'AI-enriched' : 'Custom'}

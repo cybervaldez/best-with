@@ -17,12 +17,25 @@ export function generateExperiencePrompt(
 
   const deltasStr = formatDeltasForPrompt(hpSignature.bars, songSignature.bars);
 
+  const hasSections = songSignature.sections && songSignature.sections.length > 0;
+
   let sectionsStr = '';
-  if (songSignature.sections && songSignature.sections.length > 0) {
-    sectionsStr = `\nSONG STRUCTURE:\n${songSignature.sections
+  if (hasSections) {
+    sectionsStr = `\nSONG STRUCTURE:\n${songSignature.sections!
       .map((s) => `  ${s.time} ${s.label}: ${s.description}`)
       .join('\n')}\n`;
   }
+
+  const sectionsJsonExample = hasSections
+    ? `,
+  "sections": [
+${songSignature.sections!.map((s) => `    { "time": "${s.time}", "label": "${s.label}", "description": "How this section sounds on this headphone" }`).join(',\n')}
+  ]`
+    : '';
+
+  const sectionsInstruction = hasSections
+    ? `\n3. "sections" — an array matching the song structure above. For each section, describe how it sounds on THIS headphone. Keep each description to 1 sentence focused on what the listener notices.`
+    : '';
 
   return `Describe how this specific song sounds on this specific headphone. Focus on the EXPERIENCE — how the headphone's character shapes the listener's perception of this particular song. There is no "best" headphone — describe the unique coloration and experience this pairing creates.
 
@@ -45,12 +58,14 @@ ${hpBarsStr}
 SIGNATURE COMPARISON (headphone vs song):
 ${deltasStr}
 
-Based on the comparison above${songSignature.sections ? ' and the song\'s structure' : ''}, describe the listening experience. Reference specific moments or elements of the song where the headphone's character would be most noticeable.
+Based on the comparison above${hasSections ? ' and the song\'s structure' : ''}, describe the listening experience. Reference specific moments or elements of the song where the headphone's character would be most noticeable.
 
 Respond with ONLY a JSON object:
+1. "tagline" — a short evocative one-liner describing the experience
+2. "description" — 2-3 sentences about how the song sounds on this headphone. Focus on what the listener FEELS, not frequency response.${sectionsInstruction}
 
 {
-  "tagline": "A short evocative one-liner in quotes describing the experience (e.g. \\"The close-your-eyes-on-the-train experience\\")",
-  "description": "2-3 sentences about how the song sounds on this headphone. Reference specific song sections or sonic elements. Focus on what the listener FEELS, not just frequency response."
+  "tagline": "A short evocative one-liner (e.g. \\"The close-your-eyes-on-the-train experience\\")",
+  "description": "2-3 sentences about the overall experience."${sectionsJsonExample}
 }`;
 }
