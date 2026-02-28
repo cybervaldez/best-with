@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Signature Manager — Bar &amp; Indicator Variations</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0d0d0f;
+    color: #e0e0e0;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    padding: 40px;
+    line-height: 1.5;
+  }
+  h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #fff;
+  }
+  .subtitle {
+    font-size: 0.85rem;
+    color: #888;
+    margin-bottom: 48px;
+  }
+  .section {
+    margin-bottom: 56px;
+  }
+  .section-title {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: #a78bfa;
+    margin-bottom: 24px;
+  }
+  .variation-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+  }
+  .variation {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px;
+    padding: 24px;
+  }
+  .variation:hover {
+    border-color: rgba(167,139,250,0.3);
+  }
+  .var-id {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: #a78bfa;
+    margin-bottom: 4px;
+  }
+  .var-name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 4px;
+  }
+  .var-desc {
+    font-size: 0.75rem;
+    color: #777;
+    margin-bottom: 20px;
+    line-height: 1.6;
+  }
+
+  /* ── Shared bar layout ── */
+  .bar-row {
+    display: grid;
+    grid-template-columns: 90px 1fr 70px;
+    align-items: start;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .bar-label {
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: #999;
+    text-align: right;
+    padding-top: 2px;
+  }
+  .bar-editor {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .bar-controls {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.65rem;
+    color: #777;
+  }
+  .bar-controls-label {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: #aaa;
+  }
+
+  /* ── Track base ── */
+  .track {
+    position: relative;
+    height: 8px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 4px;
+    overflow: visible;
+  }
+
+  /* ── Tick marks ── */
+  .tick {
+    position: absolute;
+    top: -2px;
+    width: 2px;
+    height: 12px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 1px;
+    transform: translateX(-50%);
+  }
+  .tick-labels {
+    position: relative;
+    height: 12px;
+  }
+  .tick-label {
+    position: absolute;
+    transform: translateX(-50%);
+    font-size: 0.5rem;
+    font-weight: 500;
+    color: #555;
+  }
+
+  /* ── Range band (precise) ── */
+  .band {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    border-radius: 4px;
+    min-width: 4px;
+  }
+
+  /* ── Gradient fades (ballpark) ── */
+  .fade-zone {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    border-radius: 4px;
+    pointer-events: none;
+  }
+
+  /* ── Indicators row ── */
+  .indicators {
+    position: relative;
+    height: 14px;
+  }
+
+  /* Category color */
+  :root {
+    --cat: #a78bfa;
+  }
+
+  /* === VARIATION-SPECIFIC STYLES === */
+
+  /* ─── A: CURRENT (Triangle Down + Glow) ─── */
+  .v-a .band { background: rgba(167,139,250,0.5); }
+  .v-a .tri {
+    position: absolute;
+    top: 0;
+    width: 0; height: 0;
+    border-left: 7px solid transparent;
+    border-right: 7px solid transparent;
+    border-bottom: 10px solid var(--cat);
+    transform: translateX(-50%) rotate(180deg);
+    filter: drop-shadow(0 0 4px var(--cat));
+  }
+
+  /* ─── B: TRIANGLE UP (Pointing Up) ─── */
+  .v-b .band { background: rgba(167,139,250,0.5); }
+  .v-b .tri-up {
+    position: absolute;
+    top: 0;
+    width: 0; height: 0;
+    border-left: 7px solid transparent;
+    border-right: 7px solid transparent;
+    border-bottom: 10px solid var(--cat);
+    transform: translateX(-50%);
+    filter: drop-shadow(0 0 4px var(--cat));
+  }
+
+  /* ─── C: DIAMOND MARKERS ─── */
+  .v-c .band { background: rgba(167,139,250,0.5); }
+  .v-c .diamond {
+    position: absolute;
+    top: 1px;
+    width: 10px; height: 10px;
+    background: var(--cat);
+    transform: translateX(-50%) rotate(45deg);
+    border-radius: 2px;
+    filter: drop-shadow(0 0 4px var(--cat));
+  }
+
+  /* ─── D: VERTICAL LINE HANDLES ─── */
+  .v-d .band { background: rgba(167,139,250,0.5); }
+  .v-d .handle-line {
+    position: absolute;
+    top: -4px;
+    width: 3px;
+    height: 20px;
+    background: var(--cat);
+    border-radius: 2px;
+    transform: translateX(-50%);
+    box-shadow: 0 0 6px var(--cat);
+  }
+
+  /* ─── E: GLOWING DOT MARKERS ─── */
+  .v-e .band { background: rgba(167,139,250,0.5); }
+  .v-e .dot-marker {
+    position: absolute;
+    top: 1px;
+    width: 10px; height: 10px;
+    background: var(--cat);
+    border-radius: 50%;
+    transform: translateX(-50%);
+    box-shadow: 0 0 8px var(--cat), 0 0 16px rgba(167,139,250,0.3);
+  }
+
+  /* ─── F: BRACKET/CARET MARKERS ─── */
+  .v-f .band { background: rgba(167,139,250,0.5); }
+  .v-f .caret {
+    position: absolute;
+    top: 0;
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--cat);
+    transform: translateX(-50%);
+    line-height: 1;
+    filter: drop-shadow(0 0 3px var(--cat));
+  }
+
+  /* === TRACK STYLE VARIATIONS === */
+
+  /* ─── G: TALL GRADIENT TRACK ─── */
+  .v-g .track {
+    height: 20px;
+    border-radius: 6px;
+    background: rgba(255,255,255,0.03);
+  }
+  .v-g .band {
+    background: linear-gradient(to bottom, rgba(167,139,250,0.6), rgba(167,139,250,0.15));
+    border-radius: 6px;
+  }
+  .v-g .band-inner-line {
+    position: absolute;
+    top: 0;
+    height: 3px;
+    border-radius: 6px 6px 0 0;
+    background: var(--cat);
+  }
+  .v-g .tick {
+    top: 0;
+    height: 20px;
+    background: rgba(255,255,255,0.06);
+  }
+  .v-g .indicators { display: none; }
+
+  /* ─── H: SEGMENTED/NOTCHED TRACK ─── */
+  .v-h .track {
+    height: 10px;
+    background: transparent;
+    display: flex;
+    gap: 3px;
+  }
+  .v-h .segment {
+    flex: 1;
+    border-radius: 3px;
+    background: rgba(255,255,255,0.06);
+    transition: background 0.15s;
+  }
+  .v-h .segment.active {
+    background: rgba(167,139,250,0.5);
+  }
+  .v-h .segment.fade {
+    background: rgba(167,139,250,0.2);
+  }
+  .v-h .tick { display: none; }
+  .v-h .indicators { display: none; }
+
+  /* ─── I: PILL TRACK WITH END CAPS ─── */
+  .v-i .track {
+    height: 12px;
+    border-radius: 6px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+  .v-i .band {
+    background: rgba(167,139,250,0.45);
+    border-radius: 6px;
+    border: 1px solid rgba(167,139,250,0.4);
+  }
+  .v-i .cap {
+    position: absolute;
+    top: -1px;
+    width: 14px; height: 14px;
+    background: #1a1a2e;
+    border: 2px solid var(--cat);
+    border-radius: 50%;
+    transform: translateX(-50%);
+    box-shadow: 0 0 6px rgba(167,139,250,0.4);
+  }
+  .v-i .indicators { display: none; }
+
+  /* ─── J: DOUBLE-LINE TRACK ─── */
+  .v-j .track {
+    height: 2px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 1px;
+    margin-top: 8px;
+    margin-bottom: 8px;
+  }
+  .v-j .band {
+    height: 2px;
+    background: var(--cat);
+    border-radius: 1px;
+    box-shadow: 0 0 4px var(--cat);
+  }
+  .v-j .tick {
+    top: -6px;
+    width: 1px;
+    height: 14px;
+    background: rgba(255,255,255,0.06);
+  }
+  .v-j .knob {
+    position: absolute;
+    top: -6px;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 40% 35%, #c4b5fd, var(--cat));
+    transform: translateX(-50%);
+    box-shadow: 0 0 8px rgba(167,139,250,0.5);
+    border: 2px solid #1a1a2e;
+  }
+
+  /* Demo positions */
+  .pos-10 { left: 10%; }
+  .pos-30 { left: 30%; }
+  .pos-50 { left: 50%; }
+  .pos-70 { left: 70%; }
+  .pos-90 { left: 90%; }
+
+  /* Band from 70% to 90% (levels 4-5) */
+  .band-4-5 { left: 70%; width: 20%; }
+  /* Band from 30% to 70% (levels 2-4) */
+  .band-2-4 { left: 30%; width: 40%; }
+
+  /* Fade: left of band-4-5, from 50% to 70% */
+  .fade-left-4-5 {
+    left: 50%; width: 20%;
+    background: linear-gradient(to right, transparent, rgba(167,139,250,0.2));
+  }
+  /* Fade: right of band-4-5, going nowhere (max=5) */
+
+  /* For the constrained example: Bass = 4-5, Warmth = 2-4 */
+</style>
+</head>
+<body>
+
+<h1>Bar &amp; Indicator Variations</h1>
+<p class="subtitle">
+  Each variation shows the same data: <strong>Bass Presence</strong> constrained to levels 4-5 (with ±1 tolerance),
+  and <strong>Warmth</strong> constrained to levels 2-4. Compare the indicator and track styles, then pick your favorite.
+</p>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SECTION 1: INDICATOR VARIATIONS (same track style) -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">Indicator Variations — Same Track, Different Markers</div>
+
+  <div class="variation-grid">
+
+    <!-- A: CURRENT — Triangle Down + Glow -->
+    <div class="variation v-a">
+      <div class="var-id">A</div>
+      <div class="var-name">Triangle Down (Current)</div>
+      <div class="var-desc">Inverted triangles pointing down with category-colored glow. What you have now.</div>
+
+      <div class="bar-row">
+        <div class="bar-label">Bass Presence</div>
+        <div class="bar-editor">
+          <div class="track">
+            <div class="fade-zone" style="left:50%;width:20%;background:linear-gradient(to right,transparent,rgba(167,139,250,0.2))"></div>
+            <div class="band band-4-5"></div>
+            <div class="tick pos-10"></div><div class="tick pos-30"></div><div class="tick pos-50"></div><div class="tick pos-70"></div><div class="tick pos-90"></div>
+          </div>
+          <div class="indicators">
+            <div class="tri" style="left:70%"></div>
+            <div class="tri" style="left:90%"></div>
+          </div>
+          <div class="tick-labels">
+            <span class="tick-label pos-10">L</span><span class="tick-label pos-30">ML</span><span class="tick-label pos-50">M</span><span class="tick-label pos-70">MH</span><span class="tick-label pos-90">H</span>
+          </div>
+        </div>
+        <div class="bar-controls"><span class="bar-controls-label">±1</span></div>
+      </div>
+
+      <div class="bar-row">
+        <div class="bar-label">Warmth</div>
+        <div class="bar-editor">
+          <div class="track">
+            <div class="band band-2-4"></div>
+            <div class="tick pos-10"></div><div class="tick pos-30"></div><div class="tick pos-50"></div><div class="tick pos-70"></div><div class="tick pos-90"></div>
+          </div>
+          <div class="indicators">
+            <div class="tri" style="left:30%"></div>
+            <div class="tri" style="left:70%"></div>
+          </div>
+          <div class="tick-labels">
+            <span class="tick-label pos-10">L</span><span class="tick-label pos-30">ML</span><span class="tick-label pos-50">M</span><span class="tick-label pos-70">MH</span><span class="tick-label pos-90">H</span>
+          </div>
+        </div>
+        <div class="bar-controls"><span class="bar-controls-label">±1</span></div>
+      </div>
+    </div>
+
+    <!-- B: TRIANGLE UP -->
+    <div class="variation v-b">
+      <div class="var-id">B</div>
+      <div class="var-name">Triangle Up</div>
+      <div class="var-desc">Classic upward-pointing triangles. Feels like "pointing at the range". More conventional direction.</div>
+
+      <div class="bar-row">
+        <div class="bar-label">Bass Presence</div>
+        <div class="bar-editor">
+          <div class="track">
+            <div class="fade-zone" style="left:50%;width:20%;background:linear-gradient(to right,transparent,rgba(167,139,250,0.2))"></div>
+            <div class="band band-4-5"></div>
+            <div class="tick pos-10"></div><div class="tick pos-30"></div><div class="tick pos-50"></div><div class="tick pos-70"></div><div class="tick pos-90"></div>
+          </div>
+          <div class="indicators">
+            <div class="tri-up" style="left:70%"></div>
+            <div class="tri-up" style="left:90%"></div>
+          </div>
+          <div class="tick-labels">
+            <span class="tick-label pos-10">L</span><span class="tick-label pos-30">ML</span><span class="tick-label pos-50">M</span><span class="tick-label pos-70">MH</span><span class="tick-label pos-90">H</span>
+          </div>
+        </div>
+        <div class="bar-controls"><span class="bar-controls-label">±1</span></div>
+      </div>
+
+      <div class="bar-row">
+        <div class="bar-label">Warmth</div>
+        <div class="bar-editor">
+          <div class="track">
+            <div class="band band-2-4"></div>
+            <div class="tick pos-10"></div><div class="tick pos-30"></div><div class="tick pos-50"></div><div class="tick pos-70"></div><div class="tick pos-90"></div>
+          </div>
+          <div class="indicators">
+            <div class="tri-up" style="left:30%"></div>
+            <div class="tri-up" style="left:70%"></div>
+          </div>
+          <div class="tick-labels">
+            <span class="tick-label pos-10">L</span><span class="tick-label pos-30">ML</span><span class="tick-label pos-50">M</span><span class="tick-label pos-70">MH</span><span class="tick-label pos-90">H</span>
+          </div>
+        </div>
+        <div class="bar-controls"><span class="bar-controls-label">±1</span></div>
+      </div>
+    </div>
+
+    <!-- C: DIAMOND -->
+    <div class="variation v-c">
+      <div class="var-id">C</div>
+      <div class="var-name">Diamond Markers</div>
+      <div class="var-desc">Rotated squares create a diamond shape. Feels precise and jewel-like. Distinctive.</div>
+
+      <div class="bar-row">
+        <div class="bar-label">Bass Presence</div>
+        <div class="bar-editor">
+          <div class="track">
+            <div class="fade-zone" style="left:50%;width:20%;background:linear-gradient(to right,transparent,rgba(167,139,250,0.2))"></div>
+            <div class="band band-4-5"></div>
+            <div class="tick pos-10"></div><div class="tick pos-30"></div><div class="tick pos-50"></div><div class="tick pos-70"></div><div class="tick pos-90"></div>
+          </div>
+          <div class="indicators">
+            <div class="diamond" style="left:70%"></div>
+            <div class="diamond" style="left:90%"></div>
+          </div>
+          <div class="tick-labels">
+            <span class="tick-label pos-10">L</span><span class="tick-label pos-30">ML</span><span class="tick-label pos-50">M</span><span class="tick-label pos-70">MH</span><span class="tick-label pos-90">H</span>
+          </div>
+        </div>
+        <div class="bar-controls"><span class="bar-controls-label">±1</span></div>
+      </div>
+
+      <div class="bar-row">
+        <div class="bar-label">Warmth</div>
+        <div class="bar-editor">
+          <div class="track">
+            <div class="band band-2-4"></div>
+            <div class="tick pos-10"></div><div class="tick pos-30"></div><div class="tick pos-50"></div><div class="tick pos-70"></div><div class="tick pos-90"></div>
+          </div>
+          <div class="indicators">
+            <div class="diamond" style="left:30%"></div>
+            <div class="diamond" style="left:70%"></div>
+          </div>
+          <div class="tick-labels">
+            <span class="tick-label pos-10">L</span><span class="tick-label pos-30">ML</span><span class="tick-label pos-50">M</span><span class="tick-label pos-70">MH</span><span class="tick-label pos-90">H</span>
+          </div>
+        </div>
+        <div class="bar-controls"><span class="bar-controls-label">±1</span></div>
+      </div>
+    </div>
+
+    <!-- D: VERTICAL LINE HANDLES -->
+    <div class="variation v-d">
+      <div class="var-id">D</div>
+      <div class="var-name">Vertical Line Handles</div>
+      <div class="var-desc">Tall glowing lines that cross through the track. Like audio EQ sliders. Very "audio tool".</div>
+
+      <div class="bar-row">
+        <div class="bar-label">Bass Presence</div>
+        <div class="bar-editor">
+          <div class="track">
+            <div class="fade-zone" style="left:50%;width:20%;background:linear-gradient(to right,transparent,rgba(167,139,250,0.2))"></div>
+            <div class="band band-4-5"></div>
+            <div class="handle-line" style="left:70%"></div>
+            <div class="handle-line" style="left:90%"></div>
+            <div class="tick pos-10"></div><div class="tick pos-30"></div><div class="tick pos-50"></div><div class="tick pos-70"></div><div class="tick pos-90"></div>
+          </div>
+          <div class="tick-labels" style="margin-top:8px">
+            <span class="tick-label pos-10">L</span><span class="tick-label pos-30">ML</span><span class="tick-label pos-50">M</span><span class="tick-label pos-70">MH</span><span class="tick-label pos-90">H</span>
+          </div>
+        </div>
+        <div class="bar-controls"><span class="bar-controls-label">±1</span></div>
+      </div>
+
+      <div class="bar-row">
+        <div class="bar-label">Warmth</div>
+        <div class="bar-editor">
+          <div class="track">
+            <div class="band band-2-4"></div>
+            <div class="handle-line" style="left:30%"></div>
+            <div class="handle-line" style="left:70%"></div>
+            <div class="tick pos-10"></div><div class="tick pos-30"></div><div class="tick pos-50"></div><div class="tick pos-70"></div><div class="tick pos-90"></div>
+          </div>
+          <div class="tick-labels" style="margin-top:8px">
+            <span class="tick-label pos-10">L</span><span class="tick-label pos-30">ML</span><span class="tick-label pos-50">M</span><span class="tick-label pos-70">MH</span><span class="tick-label pos-90">H</span>
+          </div>
+        </div>
+        <div class="bar-controls"><span class="bar-controls-label">±1</span></div>
+      </div>
+    </div>
+
+    <!-- E: GLOWING DOTS -->
+    <div class="variation v-e">
+      <div class="var-id">E</div>
+      <div class="var-name">Glowing Dot Markers</div>
+      <div class="var-desc">Circular dots with a strong glow halo. Feels like LED indicators on audio gear.</div>
+
+      <div class="bar-row">
+        <div class="bar-label">Bass Presence</div>
+        <div class="bar-editor">
+          <div class="track">
+            <div class="fade-zone" style="left:50%;width:20%;background:linear-gradient(to right,transparent,rgba(167,139,250,0.2))"></div>
+            <div class="band band-4-5"></div>
+            <div class="tick pos-10"></div><div class="tick pos-30"></div><div class="tick pos-50"></div><div class="tick pos-70"></div><div class="tick pos-90"></div>
+          </div>
+          <div class="indicators">
+            <div class="dot-marker" style="left:70%"></div>
+            <div class="dot-marker" style="left:90%"></div>
+          </div>
+          <div class="tick-labels">
+            <span class="tick-label pos-10">L</span><span class="tick-label pos-30">ML</span><span class="tick-label pos-50">M</span><span class="tick-label pos-70">MH</span><span class="tick-label pos-90">H</span>
+          </div>
+        </div>
+        <div class="bar-controls"><span class="bar-controls-label">±1</span></div>
+      </div>
+
+      <div class="bar-row">
+        <div class="bar-label">Warmth</div>
+        <div class="bar-editor">
+          <div class="track">
+            <div class="band band-2-4"></div>
+            <div class="tick pos-10"></div><div class="tick pos-30"></div><div class="tick pos-50"></div><div class="tick pos-70"></div><div class="tick pos-90"></div>
+          </div>
+          <div class="indicators">
+            <div class="dot-marker" style="left:30%"></div>
+            <div class="dot-marker" style="left:70%"></div>
+          </div>
+          <div class="tick-labels">
+            <span class="tick-label pos-10">L</span><span class="tick-label pos-30">ML</span><span class="tick-label pos-50">M</span><span class="tick-label pos-70">MH</span><span class="tick-label pos-90">H</span>
+          </div>
+        </div>
+        <div class="bar-controls"><span class="bar-controls-label">±1</span></div>
+      </div>
+    </div>
+
+    <!-- F: BRACKET/CARET -->
+    <div class="variation v-f">
+      <div class="var-id">F</div>
+      <div class="var-name">Bracket Carets</div>
+      <div class="var-desc">Unicode chevron characters as markers. Lightweight, typographic. Left caret points in, right caret points in.</div>
+
+      <div class="bar-row">
+        <div class="bar-label">Bass Presence</div>
+        <div class="bar-editor">
+          <div class="track">
+            <div class="fade-zone" style="left:50%;width:20%;background:linear-gradient(to right,transparent,rgba(167,139,250,0.2))"></div>
+            <div class="band band-4-5"></div>
+            <div class="tick pos-10"></div><div class="tick pos-30"></div><div class="tick pos-50"></div><div class="tick pos-70"></div><div class="tick pos-90"></div>
+          </div>
+          <div class="indicators">
+            <div class="caret" style="left:70%">&#x25B8;</div>
+            <div class="caret" style="left:90%">&#x25C2;</div>
+          </div>
+          <div class="tick-labels">
+            <span class="tick-label pos-10">L</span><span class="tick-label pos-30">ML</span><span class="tick-label pos-50">M</span><span class="tick-label pos-70">MH</span><span class="tick-label pos-90">H</span>
+          </div>
+        </div>
+        <div class="bar-controls"><span class="bar-controls-label">±1</span></div>
+      </div>
+
+      <div class="bar-row">
+        <div class="bar-label">Warmth</div>
+        <div class="bar-editor">
+          <div class="track">
+            <div class="band band-2-4"></div>
+            <div class="tick pos-10"></div><div class="tick pos-30"></div><div class="tick pos-50"></div><div class="tick pos-70"></div><div class="tick pos-90"></div>
+          </div>
+          <div class="indicators">
+            <div class="caret" style="left:30%">&#x25B8;</div>
+            <div class="caret" style="left:70%">&#x25C2;</div>
+          </div>
+          <div class="tick-labels">
+            <span class="tick-label pos-10">L</span><span class="tick-label pos-30">ML</span><span class="tick-label pos-50">M</span><span class="tick-label pos-70">MH</span><span class="tick-label pos-90">H</span>
+          </div>
+        </div>
+        <div class="bar-controls"><span class="bar-controls-label">±1</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SECTION 2: TRACK STYLE VARIATIONS                  -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">Track Variations — Different Bar Presentation</div>
+
+  <div class="variation-grid">
+
+    <!-- G: TALL VERTICAL GRADIENT -->
+    <div class="variation v-g">
+      <div class="var-id">G</div>
+      <div class="var-name">Tall Gradient Track</div>
+      <div class="var-desc">Taller bar with a vertical white-to-color gradient fade. Solid color line at top edge. No separate indicator — the bar IS the indicator. Very "VU meter".</div>
+
+      <div class="bar-row">
+        <div class="bar-label">Bass Presence</div>
+        <div class="bar-editor">
+          <div class="track">
+            <div class="fade-zone" style="left:50%;width:20%;background:linear-gradient(to right,transparent,rgba(167,139,250,0.12));height:100%;border-radius:6px"></div>
+            <div class="band band-4-5">
+              <div class="band-inner-line" style="left:0;width:100%"></div>
+            </div>
+            <div class="tick pos-10"></div><div class="tick pos-30"></div><div class="tick pos-50"></div><div class="tick pos-70"></div><div class="tick pos-90"></div>
+          </div>
+          <div class="tick-labels">
+            <span class="tick-label pos-10">L</span><span class="tick-label pos-30">ML</span><span class="tick-label pos-50">M</span><span class="tick-label pos-70">MH</span><span class="tick-label pos-90">H</span>
+          </div>
+        </div>
+        <div class="bar-controls"><span class="bar-controls-label">±1</span></div>
+      </div>
+
+      <div class="bar-row">
+        <div class="bar-label">Warmth</div>
+        <div class="bar-editor">
+          <div class="track">
+            <div class="band band-2-4">
+              <div class="band-inner-line" style="left:0;width:100%"></div>
+            </div>
+            <div class="tick pos-10"></div><div class="tick pos-30"></div><div class="tick pos-50"></div><div class="tick pos-70"></div><div class="tick pos-90"></div>
+          </div>
+          <div class="tick-labels">
+            <span class="tick-label pos-10">L</span><span class="tick-label pos-30">ML</span><span class="tick-label pos-50">M</span><span class="tick-label pos-70">MH</span><span class="tick-label pos-90">H</span>
+          </div>
+        </div>
+        <div class="bar-controls"><span class="bar-controls-label">±1</span></div>
+      </div>
+    </div>
+
+    <!-- H: SEGMENTED BLOCKS -->
+    <div class="variation v-h">
+      <div class="var-id">H</div>
+      <div class="var-name">Segmented Blocks</div>
+      <div class="var-desc">Five discrete segments instead of a continuous track. Active segments light up in category color. Fade segments for ballpark tolerance. Feels like a 5-step LED meter.</div>
+
+      <div class="bar-row">
+        <div class="bar-label">Bass Presence</div>
+        <div class="bar-editor">
+          <div class="track">
+            <div class="segment"></div>
+            <div class="segment"></div>
+            <div class="segment fade"></div>
+            <div class="segment active"></div>
+            <div class="segment active"></div>
+          </div>
+          <div class="tick-labels">
+            <span class="tick-label pos-10">L</span><span class="tick-label pos-30">ML</span><span class="tick-label pos-50">M</span><span class="tick-label pos-70">MH</span><span class="tick-label pos-90">H</span>
+          </div>
+        </div>
+        <div class="bar-controls"><span class="bar-controls-label">±1</span></div>
+      </div>
+
+      <div class="bar-row">
+        <div class="bar-label">Warmth</div>
+        <div class="bar-editor">
+          <div class="track">
+            <div class="segment"></div>
+            <div class="segment active"></div>
+            <div class="segment active"></div>
+            <div class="segment active"></div>
+            <div class="segment"></div>
+          </div>
+          <div class="tick-labels">
+            <span class="tick-label pos-10">L</span><span class="tick-label pos-30">ML</span><span class="tick-label pos-50">M</span><span class="tick-label pos-70">MH</span><span class="tick-label pos-90">H</span>
+          </div>
+        </div>
+        <div class="bar-controls"><span class="bar-controls-label">±1</span></div>
+      </div>
+    </div>
+
+    <!-- I: PILL WITH END CAPS -->
+    <div class="variation v-i">
+      <div class="var-id">I</div>
+      <div class="var-name">Pill Track + Circle Caps</div>
+      <div class="var-desc">Rounded pill-shaped track with circular handle caps at min/max. Like a range slider. Familiar input pattern.</div>
+
+      <div class="bar-row">
+        <div class="bar-label">Bass Presence</div>
+        <div class="bar-editor">
+          <div class="track">
+            <div class="fade-zone" style="left:50%;width:20%;background:linear-gradient(to right,transparent,rgba(167,139,250,0.15));border-radius:6px"></div>
+            <div class="band band-4-5"></div>
+            <div class="cap" style="left:70%"></div>
+            <div class="cap" style="left:90%"></div>
+            <div class="tick pos-10"></div><div class="tick pos-30"></div><div class="tick pos-50"></div><div class="tick pos-70"></div><div class="tick pos-90"></div>
+          </div>
+          <div class="tick-labels" style="margin-top:4px">
+            <span class="tick-label pos-10">L</span><span class="tick-label pos-30">ML</span><span class="tick-label pos-50">M</span><span class="tick-label pos-70">MH</span><span class="tick-label pos-90">H</span>
+          </div>
+        </div>
+        <div class="bar-controls"><span class="bar-controls-label">±1</span></div>
+      </div>
+
+      <div class="bar-row">
+        <div class="bar-label">Warmth</div>
+        <div class="bar-editor">
+          <div class="track">
+            <div class="band band-2-4"></div>
+            <div class="cap" style="left:30%"></div>
+            <div class="cap" style="left:70%"></div>
+            <div class="tick pos-10"></div><div class="tick pos-30"></div><div class="tick pos-50"></div><div class="tick pos-70"></div><div class="tick pos-90"></div>
+          </div>
+          <div class="tick-labels" style="margin-top:4px">
+            <span class="tick-label pos-10">L</span><span class="tick-label pos-30">ML</span><span class="tick-label pos-50">M</span><span class="tick-label pos-70">MH</span><span class="tick-label pos-90">H</span>
+          </div>
+        </div>
+        <div class="bar-controls"><span class="bar-controls-label">±1</span></div>
+      </div>
+    </div>
+
+    <!-- J: THIN LINE + KNOBS -->
+    <div class="variation v-j">
+      <div class="var-id">J</div>
+      <div class="var-name">Thin Line + Knobs</div>
+      <div class="var-desc">Minimal 2px glowing line with 3D-ish round knobs at endpoints. Like a mixing console fader. Most "pro audio" feel.</div>
+
+      <div class="bar-row">
+        <div class="bar-label">Bass Presence</div>
+        <div class="bar-editor">
+          <div class="track">
+            <div class="fade-zone" style="left:50%;width:20%;height:2px;background:linear-gradient(to right,transparent,rgba(167,139,250,0.3))"></div>
+            <div class="band band-4-5"></div>
+            <div class="knob" style="left:70%"></div>
+            <div class="knob" style="left:90%"></div>
+            <div class="tick pos-10"></div><div class="tick pos-30"></div><div class="tick pos-50"></div><div class="tick pos-70"></div><div class="tick pos-90"></div>
+          </div>
+          <div class="tick-labels" style="margin-top:6px">
+            <span class="tick-label pos-10">L</span><span class="tick-label pos-30">ML</span><span class="tick-label pos-50">M</span><span class="tick-label pos-70">MH</span><span class="tick-label pos-90">H</span>
+          </div>
+        </div>
+        <div class="bar-controls"><span class="bar-controls-label">±1</span></div>
+      </div>
+
+      <div class="bar-row">
+        <div class="bar-label">Warmth</div>
+        <div class="bar-editor">
+          <div class="track">
+            <div class="band band-2-4"></div>
+            <div class="knob" style="left:30%"></div>
+            <div class="knob" style="left:70%"></div>
+            <div class="tick pos-10"></div><div class="tick pos-30"></div><div class="tick pos-50"></div><div class="tick pos-70"></div><div class="tick pos-90"></div>
+          </div>
+          <div class="tick-labels" style="margin-top:6px">
+            <span class="tick-label pos-10">L</span><span class="tick-label pos-30">ML</span><span class="tick-label pos-50">M</span><span class="tick-label pos-70">MH</span><span class="tick-label pos-90">H</span>
+          </div>
+        </div>
+        <div class="bar-controls"><span class="bar-controls-label">±1</span></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div style="margin-top:48px;padding:24px;background:rgba(167,139,250,0.06);border:1px solid rgba(167,139,250,0.15);border-radius:12px">
+  <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;color:#a78bfa;margin-bottom:8px">How to Choose</div>
+  <div style="font-size:0.8rem;color:#999;line-height:1.8">
+    <strong style="color:#ddd">Indicators (A-F):</strong> Can be mixed with any track style (G-J).<br>
+    <strong style="color:#ddd">Tracks (G-J):</strong> Some replace the need for separate indicators entirely (G, H).<br>
+    <strong style="color:#ddd">Mix &amp; match:</strong> e.g., "I want track J with indicator C" — just say the letters.
+  </div>
+</div>
+
+</body>
+</html>

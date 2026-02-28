@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Variation J — Thin Line Track Sub-Variations</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0d0d0f;
+    color: #e0e0e0;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    padding: 40px;
+    line-height: 1.5;
+  }
+  h1 { font-size: 1.5rem; font-weight: 600; margin-bottom: 8px; color: #fff; }
+  .subtitle { font-size: 0.85rem; color: #888; margin-bottom: 48px; }
+  .section-title {
+    font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.15em; color: #a78bfa; margin-bottom: 24px;
+  }
+  .variation-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    margin-bottom: 56px;
+  }
+  .variation {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px;
+    padding: 24px;
+  }
+  .variation:hover { border-color: rgba(167,139,250,0.3); }
+  .var-id {
+    font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.2em; color: #a78bfa; margin-bottom: 4px;
+  }
+  .var-name { font-size: 1rem; font-weight: 600; color: #fff; margin-bottom: 4px; }
+  .var-desc { font-size: 0.75rem; color: #777; margin-bottom: 20px; line-height: 1.6; }
+
+  /* Shared layout */
+  .bar-row {
+    display: grid;
+    grid-template-columns: 90px 1fr 70px;
+    align-items: start;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .bar-label { font-size: 0.7rem; font-weight: 500; color: #999; text-align: right; padding-top: 4px; }
+  .bar-editor { display: flex; flex-direction: column; gap: 3px; }
+  .bar-controls { font-size: 0.65rem; font-weight: 600; color: #aaa; padding-top: 4px; }
+  .tick-labels { position: relative; height: 12px; }
+  .tick-label {
+    position: absolute; transform: translateX(-50%);
+    font-size: 0.5rem; font-weight: 500; color: #555;
+  }
+  .pos-10 { left: 10%; } .pos-30 { left: 30%; } .pos-50 { left: 50%; } .pos-70 { left: 70%; } .pos-90 { left: 90%; }
+
+  :root { --cat: #a78bfa; }
+
+  /* ════════════════════════════════════════════════ */
+  /* BASE: Thin line track shared by all J variants  */
+  /* ════════════════════════════════════════════════ */
+  .track-j {
+    position: relative;
+    height: 2px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 1px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+  }
+  .band-j {
+    position: absolute; top: 0; height: 2px;
+    background: var(--cat);
+    border-radius: 1px;
+    box-shadow: 0 0 4px var(--cat);
+  }
+  .band-4-5 { left: 70%; width: 20%; }
+  .band-2-4 { left: 30%; width: 40%; }
+  .tick-j {
+    position: absolute; top: -6px; width: 1px; height: 14px;
+    background: rgba(255,255,255,0.06); border-radius: 0.5px;
+  }
+  .fade-j {
+    position: absolute; top: 0; height: 2px;
+    pointer-events: none; border-radius: 1px;
+  }
+
+  /* ═══════════════════════ */
+  /* J1: Original Knobs     */
+  /* ═══════════════════════ */
+  .j1 .knob {
+    position: absolute; top: -6px;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 40% 35%, #c4b5fd, var(--cat));
+    transform: translateX(-50%);
+    box-shadow: 0 0 8px rgba(167,139,250,0.5);
+    border: 2px solid #1a1a2e;
+  }
+
+  /* ═══════════════════════════════════ */
+  /* J2: Vertical Lines (flat-top)     */
+  /* ═══════════════════════════════════ */
+  .j2 .vline {
+    position: absolute; top: -8px;
+    width: 3px; height: 18px;
+    background: var(--cat);
+    border-radius: 1.5px;
+    transform: translateX(-50%);
+    box-shadow: 0 0 6px rgba(167,139,250,0.5);
+  }
+
+  /* ══════════════════════════════════════ */
+  /* J3: Tapered Lines (wide top narrow bottom) */
+  /* ══════════════════════════════════════ */
+  .j3 .taper-down {
+    position: absolute; top: -8px;
+    width: 0; height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 18px solid var(--cat);
+    transform: translateX(-50%);
+    filter: drop-shadow(0 0 4px var(--cat));
+  }
+
+  /* ══════════════════════════════════════ */
+  /* J4: Tapered Lines (narrow top wide bottom — teardrop) */
+  /* ══════════════════════════════════════ */
+  .j4 .taper-up {
+    position: absolute; top: -8px;
+    width: 0; height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-bottom: 18px solid var(--cat);
+    transform: translateX(-50%);
+    filter: drop-shadow(0 0 4px var(--cat));
+  }
+
+  /* ═══════════════════════════════════════════ */
+  /* J5: Thin Lines + Dot Cap (lollipop)        */
+  /* ═══════════════════════════════════════════ */
+  .j5 .lollipop {
+    position: absolute;
+    transform: translateX(-50%);
+  }
+  .j5 .lollipop-stem {
+    position: absolute; top: -6px; left: 50%;
+    width: 2px; height: 14px;
+    background: var(--cat);
+    border-radius: 1px;
+    transform: translateX(-50%);
+    opacity: 0.7;
+  }
+  .j5 .lollipop-head {
+    position: absolute; top: -9px; left: 50%;
+    width: 8px; height: 8px;
+    background: var(--cat);
+    border-radius: 50%;
+    transform: translateX(-50%);
+    box-shadow: 0 0 8px rgba(167,139,250,0.6);
+  }
+
+  /* ═══════════════════════════════════════════════ */
+  /* J6: Bracket Pair (inward-facing thin brackets) */
+  /* ═══════════════════════════════════════════════ */
+  .j6 .bracket {
+    position: absolute; top: -8px;
+    width: 6px; height: 18px;
+    border: 2px solid var(--cat);
+    transform: translateX(-50%);
+    filter: drop-shadow(0 0 3px rgba(167,139,250,0.4));
+  }
+  .j6 .bracket-left {
+    border-right: none;
+    border-radius: 3px 0 0 3px;
+  }
+  .j6 .bracket-right {
+    border-left: none;
+    border-radius: 0 3px 3px 0;
+  }
+
+  /* ═══════════════════════════════════════════════════ */
+  /* J7: Vertical Lines with Rounded Caps (pill posts) */
+  /* ═══════════════════════════════════════════════════ */
+  .j7 .pill-post {
+    position: absolute; top: -8px;
+    width: 4px; height: 18px;
+    background: linear-gradient(to bottom, var(--cat), rgba(167,139,250,0.3));
+    border-radius: 4px;
+    transform: translateX(-50%);
+    box-shadow: 0 0 6px rgba(167,139,250,0.4);
+  }
+
+  /* ══════════════════════════════════════════════════════ */
+  /* J8: Notched Lines (thin line with mid-diamond accent) */
+  /* ══════════════════════════════════════════════════════ */
+  .j8 .notched {
+    position: absolute;
+    transform: translateX(-50%);
+  }
+  .j8 .notch-line {
+    position: absolute; top: -8px; left: 50%;
+    width: 2px; height: 18px;
+    background: var(--cat);
+    border-radius: 1px;
+    transform: translateX(-50%);
+    opacity: 0.6;
+  }
+  .j8 .notch-diamond {
+    position: absolute; top: -2px; left: 50%;
+    width: 7px; height: 7px;
+    background: var(--cat);
+    border-radius: 1px;
+    transform: translateX(-50%) rotate(45deg);
+    box-shadow: 0 0 6px rgba(167,139,250,0.5);
+  }
+
+  /* ══════════════════════════════════════ */
+  /* J9: Gradient Fade Posts (ghost bars)  */
+  /* ══════════════════════════════════════ */
+  .j9 .ghost-bar {
+    position: absolute; top: -10px;
+    width: 6px; height: 22px;
+    background: linear-gradient(to bottom, var(--cat), transparent);
+    border-radius: 3px 3px 1px 1px;
+    transform: translateX(-50%);
+    opacity: 0.8;
+  }
+
+  /* ══════════════════════════════════════════════ */
+  /* J10: Arrow Heads (chevron-style inline)       */
+  /* ══════════════════════════════════════════════ */
+  .j10 .arrow-in {
+    position: absolute; top: -7px;
+    font-size: 16px; font-weight: 900;
+    color: var(--cat);
+    transform: translateX(-50%);
+    line-height: 1;
+    filter: drop-shadow(0 0 4px rgba(167,139,250,0.5));
+  }
+
+</style>
+</head>
+<body>
+
+<h1>Variation J — Thin Line Track Sub-Variations</h1>
+<p class="subtitle">
+  All share the same glowing 2px thin line track. Only the <strong>endpoint markers</strong> change.<br>
+  Same data: <strong>Bass</strong> = levels 4-5 with ±1 tolerance, <strong>Warmth</strong> = levels 2-4.
+</p>
+
+<div class="variation-grid">
+
+  <!-- J1: ORIGINAL KNOBS -->
+  <div class="variation j1">
+    <div class="var-id">J1</div>
+    <div class="var-name">Round Knobs (Original J)</div>
+    <div class="var-desc">3D radial-gradient circles with border. Mixing console fader feel. Familiar slider pattern.</div>
+    <div class="bar-row">
+      <div class="bar-label">Bass Presence</div>
+      <div class="bar-editor">
+        <div class="track-j">
+          <div class="fade-j" style="left:50%;width:20%;background:linear-gradient(to right,transparent,rgba(167,139,250,0.3))"></div>
+          <div class="band-j band-4-5"></div>
+          <div class="knob" style="left:70%"></div>
+          <div class="knob" style="left:90%"></div>
+          <div class="tick-j pos-10"></div><div class="tick-j pos-30"></div><div class="tick-j pos-50"></div><div class="tick-j pos-70"></div><div class="tick-j pos-90"></div>
+        </div>
+        <div class="tick-labels" style="margin-top:4px"><span class="tick-label pos-10">L</span><span class="tick-label pos-30">ML</span><span class="tick-label pos-50">M</span><span class="tick-label pos-70">MH</span><span class="tick-label pos-90">H</span></div>
+      </div>
+      <div class="bar-controls">±1</div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">Warmth</div>
+      <div class="bar-editor">
+        <div class="track-j">
+          <div class="band-j band-2-4"></div>
+          <div class="knob" style="left:30%"></div><div class="knob" style="left:70%"></div>
+          <div class="tick-j pos-10"></div><div class="tick-j pos-30"></div><div class="tick-j pos-50"></div><div class="tick-j pos-70"></div><div class="tick-j pos-90"></div>
+        </div>
+        <div class="tick-labels" style="margin-top:4px"><span class="tick-label pos-10">L</span><span class="tick-label pos-30">ML</span><span class="tick-label pos-50">M</span><span class="tick-label pos-70">MH</span><span class="tick-label pos-90">H</span></div>
+      </div>
+      <div class="bar-controls">±1</div>
+    </div>
+  </div>
+
+  <!-- J2: VERTICAL LINES -->
+  <div class="variation j2">
+    <div class="var-id">J2</div>
+    <div class="var-name">Vertical Lines</div>
+    <div class="var-desc">Flat-top rectangular lines. Clean, minimal. Like cursor markers on a waveform editor.</div>
+    <div class="bar-row">
+      <div class="bar-label">Bass Presence</div>
+      <div class="bar-editor">
+        <div class="track-j">
+          <div class="fade-j" style="left:50%;width:20%;background:linear-gradient(to right,transparent,rgba(167,139,250,0.3))"></div>
+          <div class="band-j band-4-5"></div>
+          <div class="vline" style="left:70%"></div>
+          <div class="vline" style="left:90%"></div>
+          <div class="tick-j pos-10"></div><div class="tick-j pos-30"></div><div class="tick-j pos-50"></div><div class="tick-j pos-70"></div><div class="tick-j pos-90"></div>
+        </div>
+        <div class="tick-labels" style="margin-top:4px"><span class="tick-label pos-10">L</span><span class="tick-label pos-30">ML</span><span class="tick-label pos-50">M</span><span class="tick-label pos-70">MH</span><span class="tick-label pos-90">H</span></div>
+      </div>
+      <div class="bar-controls">±1</div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">Warmth</div>
+      <div class="bar-editor">
+        <div class="track-j">
+          <div class="band-j band-2-4"></div>
+          <div class="vline" style="left:30%"></div><div class="vline" style="left:70%"></div>
+          <div class="tick-j pos-10"></div><div class="tick-j pos-30"></div><div class="tick-j pos-50"></div><div class="tick-j pos-70"></div><div class="tick-j pos-90"></div>
+        </div>
+        <div class="tick-labels" style="margin-top:4px"><span class="tick-label pos-10">L</span><span class="tick-label pos-30">ML</span><span class="tick-label pos-50">M</span><span class="tick-label pos-70">MH</span><span class="tick-label pos-90">H</span></div>
+      </div>
+      <div class="bar-controls">±1</div>
+    </div>
+  </div>
+
+  <!-- J3: TAPERED DOWN (wide top, narrow bottom) -->
+  <div class="variation j3">
+    <div class="var-id">J3</div>
+    <div class="var-name">Tapered Down (Wide Top)</div>
+    <div class="var-desc">Wide at the top, tapering to a point at the track line. Like an inverted spike. Aggressive, precise.</div>
+    <div class="bar-row">
+      <div class="bar-label">Bass Presence</div>
+      <div class="bar-editor">
+        <div class="track-j">
+          <div class="fade-j" style="left:50%;width:20%;background:linear-gradient(to right,transparent,rgba(167,139,250,0.3))"></div>
+          <div class="band-j band-4-5"></div>
+          <div class="taper-down" style="left:70%"></div>
+          <div class="taper-down" style="left:90%"></div>
+          <div class="tick-j pos-10"></div><div class="tick-j pos-30"></div><div class="tick-j pos-50"></div><div class="tick-j pos-70"></div><div class="tick-j pos-90"></div>
+        </div>
+        <div class="tick-labels" style="margin-top:4px"><span class="tick-label pos-10">L</span><span class="tick-label pos-30">ML</span><span class="tick-label pos-50">M</span><span class="tick-label pos-70">MH</span><span class="tick-label pos-90">H</span></div>
+      </div>
+      <div class="bar-controls">±1</div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">Warmth</div>
+      <div class="bar-editor">
+        <div class="track-j">
+          <div class="band-j band-2-4"></div>
+          <div class="taper-down" style="left:30%"></div><div class="taper-down" style="left:70%"></div>
+          <div class="tick-j pos-10"></div><div class="tick-j pos-30"></div><div class="tick-j pos-50"></div><div class="tick-j pos-70"></div><div class="tick-j pos-90"></div>
+        </div>
+        <div class="tick-labels" style="margin-top:4px"><span class="tick-label pos-10">L</span><span class="tick-label pos-30">ML</span><span class="tick-label pos-50">M</span><span class="tick-label pos-70">MH</span><span class="tick-label pos-90">H</span></div>
+      </div>
+      <div class="bar-controls">±1</div>
+    </div>
+  </div>
+
+  <!-- J4: TAPERED UP (narrow top, wide bottom) -->
+  <div class="variation j4">
+    <div class="var-id">J4</div>
+    <div class="var-name">Tapered Up (Narrow Top)</div>
+    <div class="var-desc">Point at top, wide at the track. Like a drop or fang hanging from above. Dramatic, gravity-aware.</div>
+    <div class="bar-row">
+      <div class="bar-label">Bass Presence</div>
+      <div class="bar-editor">
+        <div class="track-j">
+          <div class="fade-j" style="left:50%;width:20%;background:linear-gradient(to right,transparent,rgba(167,139,250,0.3))"></div>
+          <div class="band-j band-4-5"></div>
+          <div class="taper-up" style="left:70%"></div>
+          <div class="taper-up" style="left:90%"></div>
+          <div class="tick-j pos-10"></div><div class="tick-j pos-30"></div><div class="tick-j pos-50"></div><div class="tick-j pos-70"></div><div class="tick-j pos-90"></div>
+        </div>
+        <div class="tick-labels" style="margin-top:4px"><span class="tick-label pos-10">L</span><span class="tick-label pos-30">ML</span><span class="tick-label pos-50">M</span><span class="tick-label pos-70">MH</span><span class="tick-label pos-90">H</span></div>
+      </div>
+      <div class="bar-controls">±1</div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">Warmth</div>
+      <div class="bar-editor">
+        <div class="track-j">
+          <div class="band-j band-2-4"></div>
+          <div class="taper-up" style="left:30%"></div><div class="taper-up" style="left:70%"></div>
+          <div class="tick-j pos-10"></div><div class="tick-j pos-30"></div><div class="tick-j pos-50"></div><div class="tick-j pos-70"></div><div class="tick-j pos-90"></div>
+        </div>
+        <div class="tick-labels" style="margin-top:4px"><span class="tick-label pos-10">L</span><span class="tick-label pos-30">ML</span><span class="tick-label pos-50">M</span><span class="tick-label pos-70">MH</span><span class="tick-label pos-90">H</span></div>
+      </div>
+      <div class="bar-controls">±1</div>
+    </div>
+  </div>
+
+  <!-- J5: LOLLIPOP -->
+  <div class="variation j5">
+    <div class="var-id">J5</div>
+    <div class="var-name">Lollipop (Stem + Dot)</div>
+    <div class="var-desc">Thin stem with a glowing dot at the top. Data-viz "lollipop chart" pattern. Clear, readable, modern.</div>
+    <div class="bar-row">
+      <div class="bar-label">Bass Presence</div>
+      <div class="bar-editor">
+        <div class="track-j">
+          <div class="fade-j" style="left:50%;width:20%;background:linear-gradient(to right,transparent,rgba(167,139,250,0.3))"></div>
+          <div class="band-j band-4-5"></div>
+          <div class="lollipop" style="left:70%"><div class="lollipop-stem"></div><div class="lollipop-head"></div></div>
+          <div class="lollipop" style="left:90%"><div class="lollipop-stem"></div><div class="lollipop-head"></div></div>
+          <div class="tick-j pos-10"></div><div class="tick-j pos-30"></div><div class="tick-j pos-50"></div><div class="tick-j pos-70"></div><div class="tick-j pos-90"></div>
+        </div>
+        <div class="tick-labels" style="margin-top:4px"><span class="tick-label pos-10">L</span><span class="tick-label pos-30">ML</span><span class="tick-label pos-50">M</span><span class="tick-label pos-70">MH</span><span class="tick-label pos-90">H</span></div>
+      </div>
+      <div class="bar-controls">±1</div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">Warmth</div>
+      <div class="bar-editor">
+        <div class="track-j">
+          <div class="band-j band-2-4"></div>
+          <div class="lollipop" style="left:30%"><div class="lollipop-stem"></div><div class="lollipop-head"></div></div>
+          <div class="lollipop" style="left:70%"><div class="lollipop-stem"></div><div class="lollipop-head"></div></div>
+          <div class="tick-j pos-10"></div><div class="tick-j pos-30"></div><div class="tick-j pos-50"></div><div class="tick-j pos-70"></div><div class="tick-j pos-90"></div>
+        </div>
+        <div class="tick-labels" style="margin-top:4px"><span class="tick-label pos-10">L</span><span class="tick-label pos-30">ML</span><span class="tick-label pos-50">M</span><span class="tick-label pos-70">MH</span><span class="tick-label pos-90">H</span></div>
+      </div>
+      <div class="bar-controls">±1</div>
+    </div>
+  </div>
+
+  <!-- J6: BRACKETS -->
+  <div class="variation j6">
+    <div class="var-id">J6</div>
+    <div class="var-name">Inward Brackets</div>
+    <div class="var-desc">Open bracket shapes facing inward — [ at min, ] at max. Clearly "containing" the range. Typographic precision.</div>
+    <div class="bar-row">
+      <div class="bar-label">Bass Presence</div>
+      <div class="bar-editor">
+        <div class="track-j">
+          <div class="fade-j" style="left:50%;width:20%;background:linear-gradient(to right,transparent,rgba(167,139,250,0.3))"></div>
+          <div class="band-j band-4-5"></div>
+          <div class="bracket bracket-left" style="left:70%"></div>
+          <div class="bracket bracket-right" style="left:90%"></div>
+          <div class="tick-j pos-10"></div><div class="tick-j pos-30"></div><div class="tick-j pos-50"></div><div class="tick-j pos-70"></div><div class="tick-j pos-90"></div>
+        </div>
+        <div class="tick-labels" style="margin-top:4px"><span class="tick-label pos-10">L</span><span class="tick-label pos-30">ML</span><span class="tick-label pos-50">M</span><span class="tick-label pos-70">MH</span><span class="tick-label pos-90">H</span></div>
+      </div>
+      <div class="bar-controls">±1</div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">Warmth</div>
+      <div class="bar-editor">
+        <div class="track-j">
+          <div class="band-j band-2-4"></div>
+          <div class="bracket bracket-left" style="left:30%"></div>
+          <div class="bracket bracket-right" style="left:70%"></div>
+          <div class="tick-j pos-10"></div><div class="tick-j pos-30"></div><div class="tick-j pos-50"></div><div class="tick-j pos-70"></div><div class="tick-j pos-90"></div>
+        </div>
+        <div class="tick-labels" style="margin-top:4px"><span class="tick-label pos-10">L</span><span class="tick-label pos-30">ML</span><span class="tick-label pos-50">M</span><span class="tick-label pos-70">MH</span><span class="tick-label pos-90">H</span></div>
+      </div>
+      <div class="bar-controls">±1</div>
+    </div>
+  </div>
+
+  <!-- J7: PILL POSTS -->
+  <div class="variation j7">
+    <div class="var-id">J7</div>
+    <div class="var-name">Gradient Pill Posts</div>
+    <div class="var-desc">Rounded capsule shapes that fade from solid at top to translucent at bottom. Soft, organic, weighted.</div>
+    <div class="bar-row">
+      <div class="bar-label">Bass Presence</div>
+      <div class="bar-editor">
+        <div class="track-j">
+          <div class="fade-j" style="left:50%;width:20%;background:linear-gradient(to right,transparent,rgba(167,139,250,0.3))"></div>
+          <div class="band-j band-4-5"></div>
+          <div class="pill-post" style="left:70%"></div>
+          <div class="pill-post" style="left:90%"></div>
+          <div class="tick-j pos-10"></div><div class="tick-j pos-30"></div><div class="tick-j pos-50"></div><div class="tick-j pos-70"></div><div class="tick-j pos-90"></div>
+        </div>
+        <div class="tick-labels" style="margin-top:4px"><span class="tick-label pos-10">L</span><span class="tick-label pos-30">ML</span><span class="tick-label pos-50">M</span><span class="tick-label pos-70">MH</span><span class="tick-label pos-90">H</span></div>
+      </div>
+      <div class="bar-controls">±1</div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">Warmth</div>
+      <div class="bar-editor">
+        <div class="track-j">
+          <div class="band-j band-2-4"></div>
+          <div class="pill-post" style="left:30%"></div><div class="pill-post" style="left:70%"></div>
+          <div class="tick-j pos-10"></div><div class="tick-j pos-30"></div><div class="tick-j pos-50"></div><div class="tick-j pos-70"></div><div class="tick-j pos-90"></div>
+        </div>
+        <div class="tick-labels" style="margin-top:4px"><span class="tick-label pos-10">L</span><span class="tick-label pos-30">ML</span><span class="tick-label pos-50">M</span><span class="tick-label pos-70">MH</span><span class="tick-label pos-90">H</span></div>
+      </div>
+      <div class="bar-controls">±1</div>
+    </div>
+  </div>
+
+  <!-- J8: NOTCHED LINES (line + diamond) -->
+  <div class="variation j8">
+    <div class="var-id">J8</div>
+    <div class="var-name">Notched Lines</div>
+    <div class="var-desc">Thin vertical line with a diamond accent at the crossing point. Crosshair precision. Distinctive hybrid.</div>
+    <div class="bar-row">
+      <div class="bar-label">Bass Presence</div>
+      <div class="bar-editor">
+        <div class="track-j">
+          <div class="fade-j" style="left:50%;width:20%;background:linear-gradient(to right,transparent,rgba(167,139,250,0.3))"></div>
+          <div class="band-j band-4-5"></div>
+          <div class="notched" style="left:70%"><div class="notch-line"></div><div class="notch-diamond"></div></div>
+          <div class="notched" style="left:90%"><div class="notch-line"></div><div class="notch-diamond"></div></div>
+          <div class="tick-j pos-10"></div><div class="tick-j pos-30"></div><div class="tick-j pos-50"></div><div class="tick-j pos-70"></div><div class="tick-j pos-90"></div>
+        </div>
+        <div class="tick-labels" style="margin-top:4px"><span class="tick-label pos-10">L</span><span class="tick-label pos-30">ML</span><span class="tick-label pos-50">M</span><span class="tick-label pos-70">MH</span><span class="tick-label pos-90">H</span></div>
+      </div>
+      <div class="bar-controls">±1</div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">Warmth</div>
+      <div class="bar-editor">
+        <div class="track-j">
+          <div class="band-j band-2-4"></div>
+          <div class="notched" style="left:30%"><div class="notch-line"></div><div class="notch-diamond"></div></div>
+          <div class="notched" style="left:70%"><div class="notch-line"></div><div class="notch-diamond"></div></div>
+          <div class="tick-j pos-10"></div><div class="tick-j pos-30"></div><div class="tick-j pos-50"></div><div class="tick-j pos-70"></div><div class="tick-j pos-90"></div>
+        </div>
+        <div class="tick-labels" style="margin-top:4px"><span class="tick-label pos-10">L</span><span class="tick-label pos-30">ML</span><span class="tick-label pos-50">M</span><span class="tick-label pos-70">MH</span><span class="tick-label pos-90">H</span></div>
+      </div>
+      <div class="bar-controls">±1</div>
+    </div>
+  </div>
+
+  <!-- J9: GHOST BARS (gradient fade posts) -->
+  <div class="variation j9">
+    <div class="var-id">J9</div>
+    <div class="var-name">Ghost Fade Posts</div>
+    <div class="var-desc">Wider posts that fade from solid at top to transparent at bottom. Like spectral columns. Atmospheric, audio-spectrum feel.</div>
+    <div class="bar-row">
+      <div class="bar-label">Bass Presence</div>
+      <div class="bar-editor">
+        <div class="track-j">
+          <div class="fade-j" style="left:50%;width:20%;background:linear-gradient(to right,transparent,rgba(167,139,250,0.3))"></div>
+          <div class="band-j band-4-5"></div>
+          <div class="ghost-bar" style="left:70%"></div>
+          <div class="ghost-bar" style="left:90%"></div>
+          <div class="tick-j pos-10"></div><div class="tick-j pos-30"></div><div class="tick-j pos-50"></div><div class="tick-j pos-70"></div><div class="tick-j pos-90"></div>
+        </div>
+        <div class="tick-labels" style="margin-top:4px"><span class="tick-label pos-10">L</span><span class="tick-label pos-30">ML</span><span class="tick-label pos-50">M</span><span class="tick-label pos-70">MH</span><span class="tick-label pos-90">H</span></div>
+      </div>
+      <div class="bar-controls">±1</div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">Warmth</div>
+      <div class="bar-editor">
+        <div class="track-j">
+          <div class="band-j band-2-4"></div>
+          <div class="ghost-bar" style="left:30%"></div><div class="ghost-bar" style="left:70%"></div>
+          <div class="tick-j pos-10"></div><div class="tick-j pos-30"></div><div class="tick-j pos-50"></div><div class="tick-j pos-70"></div><div class="tick-j pos-90"></div>
+        </div>
+        <div class="tick-labels" style="margin-top:4px"><span class="tick-label pos-10">L</span><span class="tick-label pos-30">ML</span><span class="tick-label pos-50">M</span><span class="tick-label pos-70">MH</span><span class="tick-label pos-90">H</span></div>
+      </div>
+      <div class="bar-controls">±1</div>
+    </div>
+  </div>
+
+  <!-- J10: ARROW HEADS -->
+  <div class="variation j10">
+    <div class="var-id">J10</div>
+    <div class="var-name">Inward Arrow Heads</div>
+    <div class="var-desc">Chevron arrows pointing inward toward the range. Left marker: >, right marker: <. Directional, clear intent.</div>
+    <div class="bar-row">
+      <div class="bar-label">Bass Presence</div>
+      <div class="bar-editor">
+        <div class="track-j">
+          <div class="fade-j" style="left:50%;width:20%;background:linear-gradient(to right,transparent,rgba(167,139,250,0.3))"></div>
+          <div class="band-j band-4-5"></div>
+          <div class="arrow-in" style="left:70%">&#x25B8;</div>
+          <div class="arrow-in" style="left:90%">&#x25C2;</div>
+          <div class="tick-j pos-10"></div><div class="tick-j pos-30"></div><div class="tick-j pos-50"></div><div class="tick-j pos-70"></div><div class="tick-j pos-90"></div>
+        </div>
+        <div class="tick-labels" style="margin-top:4px"><span class="tick-label pos-10">L</span><span class="tick-label pos-30">ML</span><span class="tick-label pos-50">M</span><span class="tick-label pos-70">MH</span><span class="tick-label pos-90">H</span></div>
+      </div>
+      <div class="bar-controls">±1</div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">Warmth</div>
+      <div class="bar-editor">
+        <div class="track-j">
+          <div class="band-j band-2-4"></div>
+          <div class="arrow-in" style="left:30%">&#x25B8;</div>
+          <div class="arrow-in" style="left:70%">&#x25C2;</div>
+          <div class="tick-j pos-10"></div><div class="tick-j pos-30"></div><div class="tick-j pos-50"></div><div class="tick-j pos-70"></div><div class="tick-j pos-90"></div>
+        </div>
+        <div class="tick-labels" style="margin-top:4px"><span class="tick-label pos-10">L</span><span class="tick-label pos-30">ML</span><span class="tick-label pos-50">M</span><span class="tick-label pos-70">MH</span><span class="tick-label pos-90">H</span></div>
+      </div>
+      <div class="bar-controls">±1</div>
+    </div>
+  </div>
+
+</div>
+
+<div style="padding:24px;background:rgba(167,139,250,0.06);border:1px solid rgba(167,139,250,0.15);border-radius:12px">
+  <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;color:#a78bfa;margin-bottom:8px">Quick Reference</div>
+  <div style="font-size:0.8rem;color:#999;line-height:2">
+    <strong style="color:#ddd">J1</strong> Round Knobs &nbsp;·&nbsp;
+    <strong style="color:#ddd">J2</strong> Vertical Lines &nbsp;·&nbsp;
+    <strong style="color:#ddd">J3</strong> Tapered Down &nbsp;·&nbsp;
+    <strong style="color:#ddd">J4</strong> Tapered Up &nbsp;·&nbsp;
+    <strong style="color:#ddd">J5</strong> Lollipop<br>
+    <strong style="color:#ddd">J6</strong> Brackets &nbsp;·&nbsp;
+    <strong style="color:#ddd">J7</strong> Gradient Pills &nbsp;·&nbsp;
+    <strong style="color:#ddd">J8</strong> Notched Lines &nbsp;·&nbsp;
+    <strong style="color:#ddd">J9</strong> Ghost Fade &nbsp;·&nbsp;
+    <strong style="color:#ddd">J10</strong> Arrow Heads
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Preview A: Studio Monitor — Audiophile Vision</title>
+<style>
+  /* ═══════════════════════════════════════════════════
+     PREVIEW A: STUDIO MONITOR
+     Audiophile-driven. Information-dense. Warm amber.
+     Centered strength bars. Headphone specs visible.
+     Dark Industrial base + warm accents.
+     ═══════════════════════════════════════════════════ */
+
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
+  :root {
+    --color-bg-primary: #0d1117;
+    --color-bg-secondary: #161b22;
+    --color-bg-tertiary: #1c2128;
+    --color-bg-card: #131920;
+    --color-border: #30363d;
+    --color-border-accent: #f0883e;
+    --color-text-primary: #c9d1d9;
+    --color-text-secondary: #8b949e;
+    --color-text-muted: #484f58;
+    --color-accent-warm: #f0883e;
+    --color-accent-gold: #ffd700;
+    --color-accent-amber: #d29922;
+    --color-accent-green: #7ee787;
+    --color-accent-blue: #58a6ff;
+    --color-success: #3fb950;
+    --color-warning: #d29922;
+    --color-error: #f85149;
+
+    --font-heading: 'JetBrains Mono', monospace;
+    --font-body: 'Inter', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+
+    --text-xs: 0.7rem;
+    --text-sm: 0.8rem;
+    --text-base: 0.9rem;
+    --text-lg: 1rem;
+    --text-xl: 1.15rem;
+    --text-2xl: 1.4rem;
+
+    --space-1: 0.25rem;
+    --space-2: 0.5rem;
+    --space-3: 0.75rem;
+    --space-4: 1rem;
+    --space-6: 1.5rem;
+    --space-8: 2rem;
+    --space-12: 3rem;
+
+    --radius-sm: 2px;
+    --radius-md: 4px;
+    --radius-lg: 6px;
+
+    --ease-enter: cubic-bezier(0.4, 0, 0.6, 1);
+    --ease-exit: cubic-bezier(0.4, 0, 0.6, 1);
+    --duration-micro: 100ms;
+    --duration-small: 200ms;
+    --duration-medium: 300ms;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--color-bg-primary);
+    color: var(--color-text-primary);
+    font-family: var(--font-body);
+    font-size: var(--text-base);
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ── Theme Toggle ── */
+  .theme-toggle {
+    position: fixed;
+    top: var(--space-4);
+    right: var(--space-4);
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-secondary);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    padding: var(--space-1) var(--space-3);
+    cursor: pointer;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    z-index: 100;
+    transition: all var(--duration-micro) var(--ease-enter);
+  }
+  .theme-toggle:hover {
+    border-color: var(--color-accent-warm);
+    color: var(--color-accent-warm);
+  }
+
+  /* ── Layout ── */
+  .app-shell {
+    display: flex;
+    min-height: 100vh;
+  }
+
+  .sidebar {
+    width: 260px;
+    background: var(--color-bg-secondary);
+    border-right: 1px solid var(--color-border);
+    padding: var(--space-6);
+    flex-shrink: 0;
+  }
+
+  .main-content {
+    flex: 1;
+    padding: var(--space-8);
+    max-width: 800px;
+  }
+
+  /* ── Sidebar ── */
+  .sidebar-label {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: var(--space-4);
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-2) var(--space-3);
+    color: var(--color-text-secondary);
+    font-size: var(--text-sm);
+    cursor: pointer;
+    border-left: 2px solid transparent;
+    transition: all var(--duration-micro) var(--ease-enter);
+    margin-bottom: var(--space-1);
+  }
+  .nav-item:hover {
+    color: var(--color-text-primary);
+    background: var(--color-bg-tertiary);
+  }
+  .nav-item.active {
+    color: var(--color-accent-warm);
+    border-left-color: var(--color-accent-warm);
+    background: rgba(240, 136, 62, 0.05);
+  }
+
+  .collection-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-2) var(--space-3);
+    margin-bottom: var(--space-1);
+    font-size: var(--text-sm);
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: color var(--duration-micro) var(--ease-enter);
+  }
+  .collection-item:hover { color: var(--color-text-primary); }
+  .collection-item .hp-type {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+    margin-left: auto;
+  }
+
+  .divider {
+    border: none;
+    border-top: 1px solid var(--color-border);
+    margin: var(--space-6) 0;
+  }
+
+  /* ── Song Header ── */
+  .song-header {
+    display: flex;
+    gap: var(--space-6);
+    margin-bottom: var(--space-8);
+  }
+
+  .album-art {
+    width: 160px;
+    height: 160px;
+    background: linear-gradient(135deg, #2d1b4e, #1a3a4a, #1b2838);
+    border: 1px solid var(--color-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    flex-shrink: 0;
+  }
+
+  .song-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .song-title {
+    font-family: var(--font-body);
+    font-size: var(--text-2xl);
+    font-weight: 500;
+    color: var(--color-text-primary);
+    margin-bottom: var(--space-1);
+  }
+
+  .song-artist {
+    font-size: var(--text-base);
+    color: var(--color-text-secondary);
+    margin-bottom: var(--space-3);
+  }
+
+  .song-tags {
+    display: flex;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+  }
+
+  .tag {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--color-accent-amber);
+    padding: var(--space-1) var(--space-2);
+    border: 1px solid rgba(210, 153, 34, 0.3);
+    letter-spacing: 0.05em;
+  }
+
+  /* ── Section Headers ── */
+  .section-header {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: var(--space-6);
+    padding-bottom: var(--space-2);
+    border-bottom: 1px solid var(--color-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  /* ── Headphone Experience Card ── */
+  .experience-card {
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    padding: var(--space-6);
+    margin-bottom: var(--space-4);
+    transition: border-color var(--duration-small) var(--ease-enter);
+  }
+  .experience-card:hover {
+    border-color: var(--color-border-accent);
+  }
+
+  .hp-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: var(--space-2);
+  }
+
+  .hp-name {
+    font-family: var(--font-mono);
+    font-size: var(--text-lg);
+    font-weight: 500;
+    color: var(--color-accent-warm);
+  }
+  .hp-name::before {
+    content: '◈ ';
+    color: var(--color-accent-gold);
+  }
+
+  .hp-specs {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+    letter-spacing: 0.05em;
+  }
+
+  .hp-tagline {
+    font-style: italic;
+    color: var(--color-text-secondary);
+    font-size: var(--text-sm);
+    margin-bottom: var(--space-4);
+    padding-left: var(--space-4);
+    border-left: 2px solid var(--color-border);
+  }
+
+  .hp-description {
+    font-size: var(--text-sm);
+    color: var(--color-text-primary);
+    line-height: 1.7;
+    margin-bottom: var(--space-4);
+  }
+
+  /* ── Centered Strength Bars ── */
+  .strength-bars {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-3) var(--space-8);
+  }
+
+  .bar-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  .bar-label {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+    width: 50px;
+    text-align: right;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .bar-track {
+    flex: 1;
+    height: 6px;
+    background: var(--color-bg-primary);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .bar-fill {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    height: 100%;
+    background: var(--color-accent-warm);
+    transform-origin: left center;
+    transition: width var(--duration-medium) var(--ease-enter);
+  }
+  .bar-fill.from-center {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  /* Bar levels */
+  .bar-fill[data-level="low"] { width: 25%; }
+  .bar-fill[data-level="mid-low"] { width: 40%; }
+  .bar-fill[data-level="mid"] { width: 55%; }
+  .bar-fill[data-level="mid-high"] { width: 70%; }
+  .bar-fill[data-level="high"] { width: 85%; }
+
+  /* ── Copy Buttons ── */
+  .copy-actions {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-4);
+    margin-top: var(--space-8);
+    padding-top: var(--space-6);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .btn-copy {
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    padding: var(--space-3) var(--space-6);
+    background: transparent;
+    border: 1px solid var(--color-accent-warm);
+    color: var(--color-accent-warm);
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    transition: all var(--duration-micro) var(--ease-enter);
+  }
+  .btn-copy:hover {
+    background: var(--color-accent-warm);
+    color: var(--color-bg-primary);
+  }
+  .btn-copy.primary {
+    background: var(--color-accent-warm);
+    color: var(--color-bg-primary);
+  }
+  .btn-copy.primary:hover {
+    background: var(--color-accent-gold);
+  }
+
+  /* ── Preview Label ── */
+  .preview-label {
+    position: fixed;
+    bottom: var(--space-4);
+    left: var(--space-4);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  /* ── Typography Showcase ── */
+  .type-showcase {
+    margin-top: var(--space-12);
+    padding-top: var(--space-8);
+    border-top: 1px solid var(--color-border);
+  }
+  .type-sample { margin-bottom: var(--space-4); }
+  .type-sample h1 { font-family: var(--font-mono); font-size: var(--text-2xl); font-weight: 600; color: var(--color-text-primary); }
+  .type-sample h2 { font-family: var(--font-mono); font-size: var(--text-xl); font-weight: 500; color: var(--color-text-primary); }
+  .type-sample h3 { font-family: var(--font-mono); font-size: var(--text-lg); font-weight: 500; color: var(--color-text-secondary); }
+  .type-sample p { font-family: var(--font-body); font-size: var(--text-sm); color: var(--color-text-secondary); line-height: 1.7; }
+  .type-sample code { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--color-accent-green); background: var(--color-bg-tertiary); padding: 2px 6px; }
+
+  /* ── Color Palette ── */
+  .palette {
+    display: flex;
+    gap: var(--space-2);
+    margin-top: var(--space-4);
+    margin-bottom: var(--space-8);
+  }
+  .swatch {
+    width: 48px;
+    height: 48px;
+    border: 1px solid var(--color-border);
+    position: relative;
+  }
+  .swatch-label {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--color-text-muted);
+    margin-top: var(--space-1);
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+  <button data-testid="theme-toggle" class="theme-toggle" onclick="document.documentElement.setAttribute('data-theme', document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark')">theme</button>
+
+  <div class="app-shell">
+    <!-- Sidebar -->
+    <nav class="sidebar" data-testid="main-sidebar">
+      <div class="sidebar-label">── navigation ──</div>
+      <div class="nav-item active">♪ Liked Songs</div>
+      <div class="nav-item">♪ Playlists</div>
+
+      <hr class="divider">
+
+      <div class="sidebar-label">── my collection ──</div>
+      <div class="collection-item">
+        ◈ Sennheiser HD 600
+        <span class="hp-type">open · 300&#8486;</span>
+      </div>
+      <div class="collection-item">
+        ◈ Sony WH-1000XM5
+        <span class="hp-type">closed · ANC</span>
+      </div>
+      <div class="collection-item">
+        ◈ AirPods Pro 2
+        <span class="hp-type">in-ear · ANC</span>
+      </div>
+
+      <hr class="divider">
+      <div class="nav-item" style="color: var(--color-accent-warm);">+ Add Headphone</div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content" data-testid="main-content">
+
+      <!-- Song Header -->
+      <div class="song-header" data-testid="song-header">
+        <div class="album-art" data-testid="album-art">🎵</div>
+        <div class="song-info">
+          <div class="song-title">Pink + White</div>
+          <div class="song-artist">Frank Ocean · Blonde</div>
+          <div class="song-tags">
+            <span class="tag">dreamy</span>
+            <span class="tag">layered</span>
+            <span class="tag">vocal-rich</span>
+            <span class="tag">nostalgic</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Experience Map -->
+      <div class="section-header">
+        <span>── experience map ──</span>
+        <span style="color: var(--color-accent-gold);">◈ ◈ ◈</span>
+      </div>
+
+      <!-- HD 600 -->
+      <div class="experience-card" data-testid="experience-card-hd600">
+        <div class="hp-header">
+          <span class="hp-name">Sennheiser HD 600</span>
+          <span class="hp-specs">open-back · 300&#8486; · dynamic</span>
+        </div>
+        <div class="hp-tagline">"The sit-back-and-notice-every-detail experience"</div>
+        <div class="hp-description">
+          The layered vocals float in open air — you'll hear Frank's voice center-stage with the backing harmonies drifting wide left and right. The acoustic guitar has a woody, natural texture. The bass is present but polite — never intrusive, always musical. Every breath and string buzz is audible.
+        </div>
+        <div class="strength-bars">
+          <div class="bar-row">
+            <span class="bar-label">Bass</span>
+            <div class="bar-track"><div class="bar-fill from-center" data-level="mid-low"></div></div>
+          </div>
+          <div class="bar-row">
+            <span class="bar-label">Mids</span>
+            <div class="bar-track"><div class="bar-fill from-center" data-level="high"></div></div>
+          </div>
+          <div class="bar-row">
+            <span class="bar-label">Treble</span>
+            <div class="bar-track"><div class="bar-fill from-center" data-level="mid-high"></div></div>
+          </div>
+          <div class="bar-row">
+            <span class="bar-label">Stage</span>
+            <div class="bar-track"><div class="bar-fill from-center" data-level="high"></div></div>
+          </div>
+          <div class="bar-row">
+            <span class="bar-label">Detail</span>
+            <div class="bar-track"><div class="bar-fill from-center" data-level="high"></div></div>
+          </div>
+          <div class="bar-row">
+            <span class="bar-label">Warmth</span>
+            <div class="bar-track"><div class="bar-fill from-center" data-level="mid"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- XM5 -->
+      <div class="experience-card" data-testid="experience-card-xm5">
+        <div class="hp-header">
+          <span class="hp-name">Sony WH-1000XM5</span>
+          <span class="hp-specs">closed-back · ANC · dynamic</span>
+        </div>
+        <div class="hp-tagline">"The close-your-eyes-on-the-train experience"</div>
+        <div class="hp-description">
+          The sub-bass warmth wraps around you — the beat hits fuller and rounder. Frank's voice feels closer, more intimate, like a private performance. You'll lose some of the left-right separation but gain emotional weight. The noise cancelling lets the quiet passages breathe in silence.
+        </div>
+        <div class="strength-bars">
+          <div class="bar-row">
+            <span class="bar-label">Bass</span>
+            <div class="bar-track"><div class="bar-fill from-center" data-level="high"></div></div>
+          </div>
+          <div class="bar-row">
+            <span class="bar-label">Mids</span>
+            <div class="bar-track"><div class="bar-fill from-center" data-level="mid"></div></div>
+          </div>
+          <div class="bar-row">
+            <span class="bar-label">Treble</span>
+            <div class="bar-track"><div class="bar-fill from-center" data-level="mid-low"></div></div>
+          </div>
+          <div class="bar-row">
+            <span class="bar-label">Stage</span>
+            <div class="bar-track"><div class="bar-fill from-center" data-level="mid-low"></div></div>
+          </div>
+          <div class="bar-row">
+            <span class="bar-label">Detail</span>
+            <div class="bar-track"><div class="bar-fill from-center" data-level="mid"></div></div>
+          </div>
+          <div class="bar-row">
+            <span class="bar-label">Warmth</span>
+            <div class="bar-track"><div class="bar-fill from-center" data-level="high"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AirPods -->
+      <div class="experience-card" data-testid="experience-card-airpods">
+        <div class="hp-header">
+          <span class="hp-name">Apple AirPods Pro 2</span>
+          <span class="hp-specs">in-ear · ANC · dynamic</span>
+        </div>
+        <div class="hp-tagline">"The everyday, anywhere experience"</div>
+        <div class="hp-description">
+          Clean and balanced — the song sounds familiar, like how most people hear it. The spatial audio processing adds a subtle width. The bass is controlled, the vocals clear. Convenient and consistent — what you'd reach for when you want the song without thinking about the gear.
+        </div>
+        <div class="strength-bars">
+          <div class="bar-row">
+            <span class="bar-label">Bass</span>
+            <div class="bar-track"><div class="bar-fill from-center" data-level="mid"></div></div>
+          </div>
+          <div class="bar-row">
+            <span class="bar-label">Mids</span>
+            <div class="bar-track"><div class="bar-fill from-center" data-level="mid"></div></div>
+          </div>
+          <div class="bar-row">
+            <span class="bar-label">Treble</span>
+            <div class="bar-track"><div class="bar-fill from-center" data-level="mid"></div></div>
+          </div>
+          <div class="bar-row">
+            <span class="bar-label">Stage</span>
+            <div class="bar-track"><div class="bar-fill from-center" data-level="mid-low"></div></div>
+          </div>
+          <div class="bar-row">
+            <span class="bar-label">Detail</span>
+            <div class="bar-track"><div class="bar-fill from-center" data-level="mid-low"></div></div>
+          </div>
+          <div class="bar-row">
+            <span class="bar-label">Warmth</span>
+            <div class="bar-track"><div class="bar-fill from-center" data-level="mid"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Copy Actions -->
+      <div class="copy-actions" data-testid="copy-actions">
+        <button class="btn-copy primary" data-testid="copy-full-btn">📋 Copy All Experiences</button>
+        <button class="btn-copy" data-testid="copy-short-btn">📋 Copy Short</button>
+      </div>
+
+      <!-- Typography & Color Showcase -->
+      <div class="type-showcase">
+        <div class="section-header"><span>── design tokens ──</span></div>
+        <div class="type-sample"><h1>Heading 1 — JetBrains Mono</h1></div>
+        <div class="type-sample"><h2>Heading 2 — Experience Map</h2></div>
+        <div class="type-sample"><h3>Heading 3 — Section Label</h3></div>
+        <div class="type-sample"><p>Body text in Inter — The layered vocals float in open air. You'll hear Frank's voice center-stage with the backing harmonies drifting wide.</p></div>
+        <div class="type-sample"><code>--color-accent-warm: #f0883e</code></div>
+
+        <div class="section-header" style="margin-top: var(--space-8);"><span>── palette ──</span></div>
+        <div class="palette">
+          <div><div class="swatch" style="background: #0d1117;"></div><div class="swatch-label">bg-1</div></div>
+          <div><div class="swatch" style="background: #161b22;"></div><div class="swatch-label">bg-2</div></div>
+          <div><div class="swatch" style="background: #1c2128;"></div><div class="swatch-label">bg-3</div></div>
+          <div><div class="swatch" style="background: #30363d;"></div><div class="swatch-label">border</div></div>
+          <div><div class="swatch" style="background: #c9d1d9;"></div><div class="swatch-label">text</div></div>
+          <div><div class="swatch" style="background: #8b949e;"></div><div class="swatch-label">muted</div></div>
+          <div><div class="swatch" style="background: #f0883e;"></div><div class="swatch-label">amber</div></div>
+          <div><div class="swatch" style="background: #ffd700;"></div><div class="swatch-label">gold</div></div>
+          <div><div class="swatch" style="background: #7ee787;"></div><div class="swatch-label">green</div></div>
+          <div><div class="swatch" style="background: #58a6ff;"></div><div class="swatch-label">blue</div></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div class="preview-label">preview a: studio monitor — audiophile vision</div>
+</body>
+</html>

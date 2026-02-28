@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Preview C: Retro Audio — Gradient + Glow Vision</title>
+<style>
+  /* ═══════════════════════════════════════════════════
+     PREVIEW C: RETRO AUDIO
+     Retro-futurism meets audiophile. Gradients, glows,
+     rounded cards, playful but premium. Album art
+     dominant with gradient bleed into background.
+     ═══════════════════════════════════════════════════ */
+
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500&display=swap');
+
+  :root {
+    --color-bg-primary: #08080f;
+    --color-bg-secondary: #0e0e18;
+    --color-bg-card: rgba(255, 255, 255, 0.04);
+    --color-bg-card-hover: rgba(255, 255, 255, 0.06);
+    --color-border: rgba(255, 255, 255, 0.08);
+    --color-border-glow: rgba(167, 139, 250, 0.3);
+    --color-text-primary: #f0f0f5;
+    --color-text-secondary: #9898b0;
+    --color-text-muted: #5a5a72;
+    --color-gradient-start: #a78bfa;
+    --color-gradient-mid: #f472b6;
+    --color-gradient-end: #fb923c;
+    --color-accent-purple: #a78bfa;
+    --color-accent-pink: #f472b6;
+    --color-accent-orange: #fb923c;
+    --color-accent-teal: #2dd4bf;
+    --color-green: #4ade80;
+
+    --font-heading: 'Space Grotesk', system-ui, sans-serif;
+    --font-body: 'Inter', system-ui, sans-serif;
+
+    --text-xs: 0.7rem;
+    --text-sm: 0.8rem;
+    --text-base: 0.9rem;
+    --text-lg: 1.05rem;
+    --text-xl: 1.25rem;
+    --text-2xl: 1.6rem;
+    --text-3xl: 2.2rem;
+
+    --space-1: 0.25rem;
+    --space-2: 0.5rem;
+    --space-3: 0.75rem;
+    --space-4: 1rem;
+    --space-6: 1.5rem;
+    --space-8: 2rem;
+    --space-10: 2.5rem;
+    --space-12: 3rem;
+
+    --radius-sm: 8px;
+    --radius-md: 16px;
+    --radius-lg: 24px;
+    --radius-xl: 32px;
+    --radius-full: 9999px;
+
+    --ease-enter: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    --ease-exit: cubic-bezier(0.4, 0, 0.2, 1);
+    --duration-micro: 150ms;
+    --duration-small: 300ms;
+    --duration-medium: 450ms;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--color-bg-primary);
+    color: var(--color-text-primary);
+    font-family: var(--font-body);
+    font-size: var(--text-base);
+    line-height: 1.6;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  .theme-toggle {
+    position: fixed;
+    top: var(--space-4);
+    right: var(--space-4);
+    background: var(--color-bg-card);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-secondary);
+    font-family: var(--font-heading);
+    font-size: var(--text-xs);
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-full);
+    cursor: pointer;
+    z-index: 100;
+    transition: all var(--duration-small) var(--ease-exit);
+  }
+  .theme-toggle:hover {
+    border-color: var(--color-accent-purple);
+    color: var(--color-accent-purple);
+    box-shadow: 0 0 20px rgba(167, 139, 250, 0.15);
+  }
+
+  /* ── Background Gradient Ambient ── */
+  .ambient-glow {
+    position: fixed;
+    top: -200px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(
+      circle,
+      rgba(167, 139, 250, 0.08) 0%,
+      rgba(244, 114, 182, 0.04) 40%,
+      transparent 70%
+    );
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── Layout ── */
+  .page {
+    max-width: 620px;
+    margin: 0 auto;
+    padding: var(--space-8) var(--space-4);
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ── Song Hero with Gradient Bleed ── */
+  .song-hero {
+    text-align: center;
+    margin-bottom: var(--space-10);
+    position: relative;
+  }
+
+  .album-art-wrapper {
+    position: relative;
+    display: inline-block;
+    margin-bottom: var(--space-6);
+  }
+
+  .album-art-glow {
+    position: absolute;
+    inset: -20px;
+    background: linear-gradient(135deg, var(--color-gradient-start), var(--color-gradient-mid), var(--color-gradient-end));
+    border-radius: var(--radius-xl);
+    filter: blur(40px);
+    opacity: 0.3;
+    z-index: 0;
+  }
+
+  .album-art-c {
+    width: 220px;
+    height: 220px;
+    border-radius: var(--radius-xl);
+    background: linear-gradient(135deg, #4a2c82, #1e5a6e, #2a3f5f);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 5rem;
+    position: relative;
+    z-index: 1;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .song-title-c {
+    font-family: var(--font-heading);
+    font-size: var(--text-3xl);
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--color-gradient-start), var(--color-gradient-mid), var(--color-gradient-end));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: var(--space-1);
+  }
+
+  .song-artist-c {
+    font-family: var(--font-heading);
+    font-size: var(--text-lg);
+    color: var(--color-text-secondary);
+    margin-bottom: var(--space-4);
+  }
+
+  .mood-pills {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-2);
+  }
+
+  .mood-pill {
+    font-family: var(--font-heading);
+    font-size: var(--text-xs);
+    color: var(--color-accent-purple);
+    background: rgba(167, 139, 250, 0.1);
+    border: 1px solid rgba(167, 139, 250, 0.2);
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius-full);
+  }
+
+  /* ── Section ── */
+  .section-label-c {
+    font-family: var(--font-heading);
+    font-size: var(--text-xs);
+    font-weight: 600;
+    color: var(--color-text-muted);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    text-align: center;
+    margin-bottom: var(--space-6);
+  }
+
+  /* ── Glass Experience Cards ── */
+  .glass-card {
+    background: var(--color-bg-card);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+    margin-bottom: var(--space-4);
+    transition: all var(--duration-small) var(--ease-exit);
+    position: relative;
+    overflow: hidden;
+  }
+  .glass-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(167, 139, 250, 0.3), transparent);
+    opacity: 0;
+    transition: opacity var(--duration-small) var(--ease-exit);
+  }
+  .glass-card:hover {
+    border-color: rgba(167, 139, 250, 0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  }
+  .glass-card:hover::before {
+    opacity: 1;
+  }
+
+  .gc-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    margin-bottom: var(--space-3);
+  }
+
+  .gc-icon {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, var(--color-accent-purple), var(--color-accent-pink));
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+  }
+  .glass-card:nth-child(2) .gc-icon {
+    background: linear-gradient(135deg, var(--color-accent-pink), var(--color-accent-orange));
+  }
+  .glass-card:nth-child(3) .gc-icon {
+    background: linear-gradient(135deg, var(--color-accent-teal), var(--color-green));
+  }
+
+  .gc-info { flex: 1; }
+
+  .gc-name {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    font-size: var(--text-lg);
+    color: var(--color-text-primary);
+  }
+
+  .gc-type {
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+  }
+
+  .gc-tagline {
+    font-family: var(--font-heading);
+    font-weight: 500;
+    font-size: var(--text-base);
+    background: linear-gradient(135deg, var(--color-accent-purple), var(--color-accent-pink));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: var(--space-3);
+  }
+  .glass-card:nth-child(2) .gc-tagline {
+    background: linear-gradient(135deg, var(--color-accent-pink), var(--color-accent-orange));
+    -webkit-background-clip: text;
+    background-clip: text;
+  }
+  .glass-card:nth-child(3) .gc-tagline {
+    background: linear-gradient(135deg, var(--color-accent-teal), var(--color-green));
+    -webkit-background-clip: text;
+    background-clip: text;
+  }
+
+  .gc-description {
+    font-size: var(--text-sm);
+    color: var(--color-text-secondary);
+    line-height: 1.7;
+    margin-bottom: var(--space-4);
+  }
+
+  /* ── Radial/Pill Bars ── */
+  .pill-bars {
+    display: flex;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+  }
+
+  .pill-bar {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-full);
+    padding: 4px 4px 4px var(--space-3);
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+  }
+
+  .pill-dots {
+    display: flex;
+    gap: 3px;
+  }
+
+  .pill-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+  }
+  .pill-dot.filled { background: var(--color-accent-purple); }
+  .glass-card:nth-child(2) .pill-dot.filled { background: var(--color-accent-pink); }
+  .glass-card:nth-child(3) .pill-dot.filled { background: var(--color-accent-teal); }
+
+  /* ── Copy Buttons ── */
+  .copy-row-c {
+    display: flex;
+    gap: var(--space-3);
+    margin-top: var(--space-8);
+  }
+
+  .btn-c {
+    flex: 1;
+    font-family: var(--font-heading);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-full);
+    cursor: pointer;
+    transition: all var(--duration-small) var(--ease-exit);
+    text-align: center;
+  }
+
+  .btn-c.primary {
+    background: linear-gradient(135deg, var(--color-accent-purple), var(--color-accent-pink));
+    color: white;
+    border: none;
+  }
+  .btn-c.primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(167, 139, 250, 0.3);
+  }
+
+  .btn-c.secondary {
+    background: transparent;
+    color: var(--color-text-secondary);
+    border: 1px solid var(--color-border);
+  }
+  .btn-c.secondary:hover {
+    border-color: var(--color-accent-purple);
+    color: var(--color-accent-purple);
+  }
+
+  /* ── Preview Label ── */
+  .preview-label {
+    position: fixed;
+    bottom: var(--space-4);
+    left: var(--space-4);
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    z-index: 1;
+  }
+
+  /* ── Typography & Palette Showcase ── */
+  .type-showcase {
+    margin-top: var(--space-12);
+    padding-top: var(--space-8);
+    border-top: 1px solid var(--color-border);
+  }
+  .type-sample { margin-bottom: var(--space-4); }
+  .type-sample h1 {
+    font-family: var(--font-heading); font-size: var(--text-3xl); font-weight: 700;
+    background: linear-gradient(135deg, var(--color-gradient-start), var(--color-gradient-mid));
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .type-sample h2 { font-family: var(--font-heading); font-size: var(--text-2xl); font-weight: 600; }
+  .type-sample h3 { font-family: var(--font-heading); font-size: var(--text-xl); font-weight: 500; color: var(--color-text-secondary); }
+  .type-sample p { font-family: var(--font-body); font-size: var(--text-sm); color: var(--color-text-secondary); line-height: 1.7; }
+
+  .palette {
+    display: flex;
+    gap: var(--space-2);
+    margin-top: var(--space-4);
+    flex-wrap: wrap;
+  }
+  .swatch {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+  }
+  .swatch.gradient {
+    background: linear-gradient(135deg, var(--color-gradient-start), var(--color-gradient-mid), var(--color-gradient-end));
+  }
+  .swatch-label {
+    font-size: 9px;
+    color: var(--color-text-muted);
+    margin-top: var(--space-1);
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+  <div class="ambient-glow"></div>
+
+  <button data-testid="theme-toggle" class="theme-toggle" onclick="document.documentElement.setAttribute('data-theme', document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark')">theme</button>
+
+  <div class="page">
+    <!-- Song Hero -->
+    <div class="song-hero" data-testid="song-header">
+      <div class="album-art-wrapper">
+        <div class="album-art-glow"></div>
+        <div class="album-art-c" data-testid="album-art">🎵</div>
+      </div>
+      <div class="song-title-c">Pink + White</div>
+      <div class="song-artist-c">Frank Ocean · Blonde</div>
+      <div class="mood-pills">
+        <span class="mood-pill">dreamy</span>
+        <span class="mood-pill">layered</span>
+        <span class="mood-pill">vocal-rich</span>
+      </div>
+    </div>
+
+    <!-- Experiences -->
+    <div class="section-label-c">Your Headphone Experiences</div>
+
+    <!-- HD 600 -->
+    <div class="glass-card" data-testid="experience-card-hd600">
+      <div class="gc-header">
+        <div class="gc-icon">🎧</div>
+        <div class="gc-info">
+          <div class="gc-name">Sennheiser HD 600</div>
+          <div class="gc-type">Open-back · 300&#8486; · Dynamic</div>
+        </div>
+      </div>
+      <div class="gc-tagline">"The sit-back-and-notice-every-detail experience"</div>
+      <div class="gc-description">
+        Vocals float in open air — Frank center-stage, harmonies drifting wide. Guitar has a woody, natural texture. Bass is present but polite. Every breath and string buzz is audible.
+      </div>
+      <div class="pill-bars">
+        <div class="pill-bar">Bass <div class="pill-dots"><div class="pill-dot filled"></div><div class="pill-dot filled"></div><div class="pill-dot"></div><div class="pill-dot"></div><div class="pill-dot"></div></div></div>
+        <div class="pill-bar">Mids <div class="pill-dots"><div class="pill-dot filled"></div><div class="pill-dot filled"></div><div class="pill-dot filled"></div><div class="pill-dot filled"></div><div class="pill-dot"></div></div></div>
+        <div class="pill-bar">Stage <div class="pill-dots"><div class="pill-dot filled"></div><div class="pill-dot filled"></div><div class="pill-dot filled"></div><div class="pill-dot filled"></div><div class="pill-dot"></div></div></div>
+        <div class="pill-bar">Detail <div class="pill-dots"><div class="pill-dot filled"></div><div class="pill-dot filled"></div><div class="pill-dot filled"></div><div class="pill-dot filled"></div><div class="pill-dot"></div></div></div>
+      </div>
+    </div>
+
+    <!-- XM5 -->
+    <div class="glass-card" data-testid="experience-card-xm5">
+      <div class="gc-header">
+        <div class="gc-icon">🎧</div>
+        <div class="gc-info">
+          <div class="gc-name">Sony WH-1000XM5</div>
+          <div class="gc-type">Closed-back · ANC · Dynamic</div>
+        </div>
+      </div>
+      <div class="gc-tagline">"The close-your-eyes-on-the-train experience"</div>
+      <div class="gc-description">
+        Sub-bass warmth wraps around you. Frank's voice feels closer, more intimate. Less separation but more emotional weight. Noise cancelling lets quiet passages breathe in silence.
+      </div>
+      <div class="pill-bars">
+        <div class="pill-bar">Bass <div class="pill-dots"><div class="pill-dot filled"></div><div class="pill-dot filled"></div><div class="pill-dot filled"></div><div class="pill-dot filled"></div><div class="pill-dot"></div></div></div>
+        <div class="pill-bar">Mids <div class="pill-dots"><div class="pill-dot filled"></div><div class="pill-dot filled"></div><div class="pill-dot filled"></div><div class="pill-dot"></div><div class="pill-dot"></div></div></div>
+        <div class="pill-bar">Warmth <div class="pill-dots"><div class="pill-dot filled"></div><div class="pill-dot filled"></div><div class="pill-dot filled"></div><div class="pill-dot filled"></div><div class="pill-dot"></div></div></div>
+        <div class="pill-bar">Stage <div class="pill-dots"><div class="pill-dot filled"></div><div class="pill-dot filled"></div><div class="pill-dot"></div><div class="pill-dot"></div><div class="pill-dot"></div></div></div>
+      </div>
+    </div>
+
+    <!-- AirPods -->
+    <div class="glass-card" data-testid="experience-card-airpods">
+      <div class="gc-header">
+        <div class="gc-icon">🎧</div>
+        <div class="gc-info">
+          <div class="gc-name">Apple AirPods Pro 2</div>
+          <div class="gc-type">In-ear · ANC · Dynamic</div>
+        </div>
+      </div>
+      <div class="gc-tagline">"The everyday, anywhere experience"</div>
+      <div class="gc-description">
+        Clean and balanced. Vocals clear, bass controlled. Spatial audio adds subtle width. What you reach for when you want the song without thinking about the gear.
+      </div>
+      <div class="pill-bars">
+        <div class="pill-bar">Bass <div class="pill-dots"><div class="pill-dot filled"></div><div class="pill-dot filled"></div><div class="pill-dot filled"></div><div class="pill-dot"></div><div class="pill-dot"></div></div></div>
+        <div class="pill-bar">Mids <div class="pill-dots"><div class="pill-dot filled"></div><div class="pill-dot filled"></div><div class="pill-dot filled"></div><div class="pill-dot"></div><div class="pill-dot"></div></div></div>
+        <div class="pill-bar">Detail <div class="pill-dots"><div class="pill-dot filled"></div><div class="pill-dot filled"></div><div class="pill-dot"></div><div class="pill-dot"></div><div class="pill-dot"></div></div></div>
+        <div class="pill-bar">Stage <div class="pill-dots"><div class="pill-dot filled"></div><div class="pill-dot filled"></div><div class="pill-dot"></div><div class="pill-dot"></div><div class="pill-dot"></div></div></div>
+      </div>
+    </div>
+
+    <!-- Copy Row -->
+    <div class="copy-row-c" data-testid="copy-actions">
+      <button class="btn-c primary" data-testid="copy-full-btn">📋 Copy Full</button>
+      <button class="btn-c secondary" data-testid="copy-short-btn">📋 Copy Short</button>
+    </div>
+
+    <!-- Typography & Palette Showcase -->
+    <div class="type-showcase">
+      <div class="section-label-c">Design Tokens</div>
+      <div class="type-sample"><h1>Heading 1 — Space Grotesk</h1></div>
+      <div class="type-sample"><h2>Heading 2 — Section Headers</h2></div>
+      <div class="type-sample"><h3>Heading 3 — Subsections</h3></div>
+      <div class="type-sample"><p>Body text in Inter — The layered vocals float in open air. You'll hear Frank's voice center-stage with the backing harmonies drifting wide.</p></div>
+
+      <div class="section-label-c" style="margin-top: var(--space-8);">Palette</div>
+      <div class="palette">
+        <div><div class="swatch" style="background: #08080f;"></div><div class="swatch-label">bg-1</div></div>
+        <div><div class="swatch" style="background: #0e0e18;"></div><div class="swatch-label">bg-2</div></div>
+        <div><div class="swatch" style="background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.08);"></div><div class="swatch-label">glass</div></div>
+        <div><div class="swatch" style="background: #f0f0f5;"></div><div class="swatch-label">text</div></div>
+        <div><div class="swatch" style="background: #9898b0;"></div><div class="swatch-label">muted</div></div>
+        <div><div class="swatch" style="background: #a78bfa;"></div><div class="swatch-label">purple</div></div>
+        <div><div class="swatch" style="background: #f472b6;"></div><div class="swatch-label">pink</div></div>
+        <div><div class="swatch" style="background: #fb923c;"></div><div class="swatch-label">orange</div></div>
+        <div><div class="swatch" style="background: #2dd4bf;"></div><div class="swatch-label">teal</div></div>
+        <div><div class="swatch gradient"></div><div class="swatch-label">gradient</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="preview-label">preview c: retro audio — gradient + glow vision</div>
+</body>
+</html>

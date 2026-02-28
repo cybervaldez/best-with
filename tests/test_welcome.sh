@@ -12,11 +12,11 @@ trap cleanup EXIT
 agent-browser open "$BASE_URL"
 sleep 1
 
-# Check welcome message
-agent-browser snapshot -c | grep -q "Welcome to spotify-liked"
+# Check login page renders
+agent-browser snapshot -c | grep -q "Connect with Spotify"
 
 # Verify window state
 STATE=$(agent-browser eval "window.appState?.initialized" 2>/dev/null)
 [ "$STATE" = "true" ] && echo "  [PASS] App state initialized"
 
-echo "PASS: Welcome page loads successfully"
+echo "PASS: Login page loads successfully"
