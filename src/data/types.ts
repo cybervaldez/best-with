@@ -66,13 +66,29 @@ export interface SongSection {
   description: string; // e.g. "Sparse piano, reverbed vocal hum"
 }
 
+export interface SignaturePerspective {
+  perspectiveId: string;
+  label: string;
+  tags: string[];
+  bars: StrengthBar[];
+  sections?: SongSection[];
+  category?: HeadphoneCategory;
+  secondaryCategories?: HeadphoneCategory[];
+  source: 'llm' | 'manual' | 'preset';
+  llmTag?: LlmTag;
+  refinedFrom?: string;
+}
+
 export interface SongSignature {
   tags: string[];
   bars: StrengthBar[];
   sections?: SongSection[];
+  perspectives: SignaturePerspective[];
+  defaultPerspectiveId: string;
 }
 
 export type ExperienceNoteSource = 'auto' | 'llm' | 'manual';
+export type LlmTag = 'chatgpt' | 'gemini' | 'claude' | 'other';
 
 export interface ExperienceSectionNote {
   time: string;
@@ -80,11 +96,28 @@ export interface ExperienceSectionNote {
   description: string;
 }
 
+export interface VoicedExperience {
+  voiceId: string;
+  voiceName: string;
+  tagline: string;
+  description: string;
+  sections?: ExperienceSectionNote[];
+  videoReviewUrl?: string;
+  llmTag?: LlmTag;
+}
+
 export interface ExperienceNote {
   tagline: string;
   description: string;
   sections?: ExperienceSectionNote[];
   source: ExperienceNoteSource;
+  voiceId?: string;
+  voiceName?: string;
+  videoReviewUrl?: string;
+  voices?: VoicedExperience[];
+  defaultVoiceId?: string;
+  songPerspectiveId?: string;
+  hpPerspectiveId?: string;
 }
 
 export type BuiltInCategory =
@@ -111,6 +144,8 @@ export interface HeadphoneSignature {
   bars: StrengthBar[];
   category: HeadphoneCategory;
   secondaryCategories?: HeadphoneCategory[];
+  perspectives: SignaturePerspective[];
+  defaultPerspectiveId: string;
 }
 
 export interface CategoryScore {

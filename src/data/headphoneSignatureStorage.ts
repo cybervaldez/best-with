@@ -1,4 +1,4 @@
-import type { HeadphoneSignature, BarLevel, CategoryRuleSet, FilterMode } from './types';
+import type { HeadphoneSignature, BarLevel, CategoryRuleSet, FilterMode, SignaturePerspective } from './types';
 import { deriveCategories } from './headphoneCategory';
 
 const STORAGE_PREFIX = 'headphone_signature_';
@@ -46,13 +46,32 @@ export function parseHeadphoneSignatureJSON(
     throw new Error('All 6 bar labels must be unique');
   }
 
+  const tags = parsed.tags as string[];
   const bars = parsed.bars.map((b: { label: string; level: BarLevel }) => ({
     label: b.label,
     level: b.level,
   }));
 
   const derived = deriveCategories(bars, rules, mode);
-  return { tags: parsed.tags, bars, category: derived.primary, secondaryCategories: derived.secondary };
+
+  const perspective: SignaturePerspective = {
+    perspectiveId: 'llm-' + Date.now(),
+    label: 'LLM',
+    tags,
+    bars,
+    category: derived.primary,
+    secondaryCategories: derived.secondary,
+    source: 'llm',
+  };
+
+  return {
+    tags,
+    bars,
+    category: derived.primary,
+    secondaryCategories: derived.secondary,
+    perspectives: [perspective],
+    defaultPerspectiveId: perspective.perspectiveId,
+  };
 }
 
 export function saveHeadphoneSignature(headphoneId: string, signature: HeadphoneSignature): void {

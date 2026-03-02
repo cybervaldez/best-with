@@ -31,11 +31,22 @@ export function presetToSignature(presetId: string): HeadphoneSignature | null {
   const preset = PRESET_MAP[presetId];
   if (!preset) return null;
   const derived = deriveCategories(preset.baseline.bars);
+  const perspective = {
+    perspectiveId: 'preset-' + presetId,
+    label: preset.name,
+    tags: [...preset.baseline.tags],
+    bars: [...preset.baseline.bars],
+    category: derived.primary,
+    secondaryCategories: derived.secondary,
+    source: 'preset' as const,
+  };
   return {
     tags: [...preset.baseline.tags],
     bars: [...preset.baseline.bars],
     category: derived.primary,
     secondaryCategories: derived.secondary,
+    perspectives: [perspective],
+    defaultPerspectiveId: perspective.perspectiveId,
   };
 }
 

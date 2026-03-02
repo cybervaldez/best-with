@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
-import type { Headphone, HeadphoneSignature, StrengthBar, BarLevel, CategoryRuleSet, FilterMode, CustomCategoryDef, DerivedCategories } from '../data/types';
+import type { Headphone, HeadphoneSignature, HeadphoneCategory, StrengthBar, BarLevel, CategoryRuleSet, FilterMode, CustomCategoryDef, DerivedCategories, SignaturePerspective, LlmTag } from '../data/types';
 import { BAR_LABELS } from '../data/categoryDefaults';
 import { generateHeadphoneSignaturePrompt } from '../data/headphonePromptTemplate';
 import { parseHeadphoneSignatureJSON } from '../data/headphoneSignatureStorage';
@@ -11,6 +11,10 @@ import {
   getSingleReadout, NUMBER_TO_LEVEL, LEVEL_TO_NUMBER,
   levelToPosition, positionToLevel,
 } from '../data/barMetadata';
+import { LLM_TAG_OPTIONS } from '../data/voices';
+import { getApiKey } from '../data/preferencesStorage';
+import { generateWithApiKey, extractJSON } from '../data/llmApi';
+import ApiKeyPreferencesModal from './ApiKeyPreferencesModal';
 
 interface Props {
   headphone: Headphone;
@@ -22,6 +26,7 @@ interface Props {
   onClose: () => void;
 }
 
+type ModalView = 'choose' | 'ai' | 'tabs';
 type Tab = 'manual' | 'llm';
 
 function defaultBars(): Record<string, number> {
@@ -68,6 +73,7 @@ function barsMatch(a: Record<string, number>, b: Record<string, number>): boolea
 export default function HeadphoneSignatureModal({
   headphone, existingSignature, categoryRules, filterMode, customCategories, onSave, onClose,
 }: Props) {
+  const [modalView, setModalView] = useState<ModalView>(existingSignature ? 'tabs' : 'choose');
   const [tab, setTab] = useState<Tab>('manual');
   const [bars, setBars] = useState<Record<string, number>>(() =>
     existingSignature ? barsFromSignature(existingSignature) : defaultBars()
@@ -78,9 +84,19 @@ export default function HeadphoneSignatureModal({
   const [tagInput, setTagInput] = useState('');
   const tagInputRef = useRef<HTMLInputElement>(null);
 
-  // LLM tab state
+  // LLM / AI view state
+  const [llmStep, setLlmStep] = useState<'copy' | 'paste'>('copy');
   const [copied, setCopied] = useState(false);
   const [jsonInput, setJsonInput] = useState('');
+  const [showPreferences, setShowPreferences] = useState(false);
+  const [showPrompt, setShowPrompt] = useState(false);
+  const [selectedLlmTag, setSelectedLlmTag] = useState<LlmTag>('other');
+  const [latestSig, setLatestSig] = useState<HeadphoneSignature | null>(existingSignature);
+  const [generating, setGenerating] = useState(false);
+  const [generateError, setGenerateError] = useState<string | null>(null);
+  const [presetPerspective, setPresetPerspective] = useState<SignaturePerspective | null>(
+    () => existingSignature?.perspectives.find(p => p.source === 'preset') ?? null
+  );
 
   // Drag state
   const dragRef = useRef<{ barLabel: string; trackEl: HTMLElement } | null>(null);
@@ -206,19 +222,103 @@ export default function HeadphoneSignatureModal({
     setTags((prev) => prev.filter((t) => t !== tag));
   }
 
+  const availableProvider = LLM_TAG_OPTIONS.find(o => o.id !== 'other' && getApiKey(o.id));
+  const hasApiKey = !!availableProvider;
+
+  async function handleCopyAi() {
+    await navigator.clipboard.writeText(prompt);
+    setCopied(true);
+    setTimeout(() => {
+      setCopied(false);
+      setLlmStep('paste');
+    }, 600);
+  }
+
+  async function handleRecopy() {
+    await navigator.clipboard.writeText(prompt);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
   async function handleCopy() {
     await navigator.clipboard.writeText(prompt);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }
 
-  function handleApplyLlm() {
-    if (llmValidation?.valid) {
-      const sig = llmValidation.sig;
-      setBars(barsFromSignature(sig));
-      setTags(sig.tags);
-      setTab('manual');
+  async function handleGenerateAi() {
+    if (!availableProvider) return;
+    const apiKey = getApiKey(availableProvider.id);
+    if (!apiKey) return;
+
+    setGenerating(true);
+    setGenerateError(null);
+    setSelectedLlmTag(availableProvider.id);
+
+    const result = await generateWithApiKey(availableProvider.id, apiKey, prompt);
+    setGenerating(false);
+
+    if (!result.ok) {
+      setGenerateError(result.error.message);
+      return;
     }
+
+    setJsonInput(extractJSON(result.text));
+    setLlmStep('paste');
+  }
+
+  async function handleGenerate() {
+    if (!availableProvider) return;
+    const apiKey = getApiKey(availableProvider.id);
+    if (!apiKey) return;
+
+    setGenerating(true);
+    setGenerateError(null);
+    setSelectedLlmTag(availableProvider.id);
+
+    const result = await generateWithApiKey(availableProvider.id, apiKey, prompt);
+    setGenerating(false);
+
+    if (!result.ok) {
+      setGenerateError(result.error.message);
+      return;
+    }
+
+    setJsonInput(extractJSON(result.text));
+  }
+
+  function handleApplyLlm() {
+    if (!llmValidation?.valid) return;
+    const sig = llmValidation.sig;
+
+    // Create LLM perspective with tag — label "Consensus" per audiophile convention
+    const llmPerspective: SignaturePerspective = {
+      perspectiveId: 'llm-' + Date.now(),
+      label: 'Consensus',
+      tags: sig.tags,
+      bars: sig.bars,
+      category: sig.category,
+      secondaryCategories: sig.secondaryCategories,
+      source: 'llm',
+      llmTag: selectedLlmTag,
+    };
+
+    // Save immediately with LLM perspective — keep existing manual + preset
+    const existingManual = latestSig?.perspectives.filter(p => p.source === 'manual') ?? [];
+    const existingPreset = latestSig?.perspectives.filter(p => p.source === 'preset') ?? [];
+    const merged: HeadphoneSignature = {
+      ...sig,
+      perspectives: [llmPerspective, ...existingPreset, ...existingManual],
+      defaultPerspectiveId: llmPerspective.perspectiveId,
+    };
+    onSave(merged);
+    setLatestSig(merged);
+
+    // Pre-fill refine tab
+    setBars(barsFromSignature(sig));
+    setTags(sig.tags);
+    setModalView('tabs');
+    setTab('manual');
   }
 
   const preset = PRESET_MAP[headphone.id];
@@ -234,14 +334,63 @@ export default function HeadphoneSignatureModal({
   }
 
   function handleSave() {
-    const signature: HeadphoneSignature = {
+    const existingManualP = latestSig?.perspectives.find(p => p.source === 'manual');
+
+    // Collect base perspectives (LLM + preset)
+    const existingLlm = latestSig?.perspectives.filter(p => p.source === 'llm') ?? [];
+    const savedPresets = latestSig?.perspectives.filter(p => p.source === 'preset') ?? [];
+    // Include preset from choice screen if not already saved
+    const allPresets = presetPerspective && !savedPresets.some(p => p.perspectiveId === presetPerspective.perspectiveId)
+      ? [...savedPresets, presetPerspective]
+      : savedPresets;
+
+    // Determine base for refinedFrom (LLM takes precedence, then preset)
+    const base = existingLlm[0] ?? allPresets[allPresets.length - 1] ?? null;
+
+    const manualPerspective: SignaturePerspective = {
+      perspectiveId: existingManualP?.perspectiveId ?? 'manual-' + Date.now(),
+      label: 'My Take',
       tags,
       bars: strengthBars,
       category: liveCategories.primary,
       secondaryCategories: liveCategories.secondary,
+      source: 'manual',
+      ...(base ? { refinedFrom: base.perspectiveId } : {}),
+    };
+
+    const allPerspectives = [...existingLlm, ...allPresets, manualPerspective];
+    const defaultId = latestSig?.defaultPerspectiveId ?? manualPerspective.perspectiveId;
+    const defaultP = allPerspectives.find(p => p.perspectiveId === defaultId) ?? manualPerspective;
+
+    const signature: HeadphoneSignature = {
+      tags: defaultP.tags,
+      bars: defaultP.bars,
+      category: defaultP.category ?? liveCategories.primary,
+      secondaryCategories: defaultP.secondaryCategories ?? liveCategories.secondary,
+      perspectives: allPerspectives,
+      defaultPerspectiveId: defaultId,
     };
     onSave(signature);
     onClose();
+  }
+
+  function handleChoosePreset(category: string) {
+    const presetBars = barsFromPreset(category, categoryRules);
+    setBars(presetBars);
+    setActivePreset(category);
+
+    const presetP: SignaturePerspective = {
+      perspectiveId: 'preset-' + Date.now(),
+      label: CATEGORY_LABELS[category] ?? category,
+      tags: [],
+      bars: barsToStrengthBars(presetBars),
+      category: category as HeadphoneCategory,
+      source: 'preset',
+    };
+    setPresetPerspective(presetP);
+
+    setModalView('tabs');
+    setTab('manual');
   }
 
   function handleOverlayClick(e: React.MouseEvent) {
@@ -257,13 +406,164 @@ export default function HeadphoneSignatureModal({
         <h2 className="modal-title">{headphone.name}</h2>
         <p className="modal-subtitle">{headphone.specs}</p>
 
+        {modalView === 'choose' ? (
+          <div className="sig-choose-screen" data-testid="hp-sig-choose">
+            <p className="sig-choose-subtitle">Pick a starting point</p>
+            <div className="sig-preset-grid" data-testid="hp-sig-preset-grid">
+              {BUILT_IN_PRIORITY.map((cat) => (
+                <button
+                  key={cat}
+                  className={`sig-preset-card category-${cat}`}
+                  onClick={() => handleChoosePreset(cat)}
+                  data-testid={`hp-sig-preset-${cat}`}
+                >
+                  {CATEGORY_LABELS[cat] ?? cat}
+                </button>
+              ))}
+            </div>
+            <button
+              className="sig-choose-secondary"
+              onClick={() => { setModalView('ai'); setLlmStep('copy'); }}
+              data-testid="hp-sig-choose-ai"
+            >
+              {'\u2728'} AI Analysis
+              <span className="sig-choose-primary-desc">Let an LLM analyze this headphone</span>
+            </button>
+            <button
+              className="sig-choose-link"
+              onClick={() => { setModalView('tabs'); setTab('manual'); }}
+              data-testid="hp-sig-choose-manual"
+            >
+              Start from scratch {'\u2192'}
+            </button>
+          </div>
+        ) : modalView === 'ai' ? (
+          <div className="sig-ai-view" data-testid="hp-sig-ai">
+            {llmStep === 'copy' && (
+              <>
+                <p className="modal-description">
+                  Press the button below to copy the prompt, then paste it into your favorite LLM (ChatGPT, Gemini, Claude, etc.). It will analyze <strong>{headphone.name}</strong>'s sound character — how it colors bass, treble, warmth, and more across all music.
+                </p>
+                {generateError && (
+                  <div className="modal-validation invalid">
+                    <span className="modal-validation-icon">{'\u2717'}</span>
+                    <span className="modal-validation-text">{generateError}</span>
+                  </div>
+                )}
+                <button
+                  className="btn-modal primary sig-ai-copy-btn"
+                  onClick={handleCopyAi}
+                  data-testid="hp-sig-ai-copy"
+                >
+                  {copied ? 'Copied!' : 'Copy to Clipboard'}
+                </button>
+                <div className="sig-ai-divider"><span>or</span></div>
+                <div className="sig-ai-apikey-section">
+                  <span className="sig-ai-apikey-text">Have an API key?</span>
+                  <button className="sig-ai-apikey-link" onClick={() => setShowPreferences(true)}>
+                    Set up API key
+                  </button>
+                </div>
+                {hasApiKey && (
+                  <button
+                    className="btn-modal primary"
+                    onClick={handleGenerateAi}
+                    disabled={generating}
+                    data-testid="hp-sig-ai-generate"
+                  >
+                    {generating ? 'Generating...' : `Generate with ${availableProvider!.name}`}
+                  </button>
+                )}
+              </>
+            )}
+            {llmStep === 'paste' && (
+              <>
+                {llmValidation?.valid ? (
+                  <>
+                    <div className="sig-ai-preview">
+                      <div className="sig-ai-preview-bars">
+                        {llmValidation.sig.bars.map((bar) => (
+                          <div className="sig-ai-preview-bar" key={bar.label}>
+                            <span className="sig-ai-preview-bar-label">{bar.label}</span>
+                            <span className={`sig-ai-preview-bar-level level-${bar.level}`}>{bar.level.replace('-', ' ')}</span>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="sig-ai-preview-tags">
+                        {llmValidation.sig.tags.map((tag) => (
+                          <span className="tag" key={tag}>{tag}</span>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="sig-ai-recopy">
+                      Not what you expected?{' '}
+                      <span className="sig-ai-recopy-link" onClick={() => setJsonInput('')}>Paste another response</span>
+                    </div>
+                    <div className="sig-llm-tag-picker sig-llm-tag-picker-centered">
+                      <span className="sig-llm-tag-label">Tag the LLM you copied from</span>
+                      {LLM_TAG_OPTIONS.map((opt) => (
+                        <button
+                          key={opt.id}
+                          className={`llm-tag-badge${selectedLlmTag === opt.id ? ' selected' : ''}`}
+                          onClick={() => setSelectedLlmTag(opt.id)}
+                        >
+                          {opt.name}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <p className="modal-description">
+                      After pasting the prompt into your favorite LLM (ChatGPT, Gemini, Claude, etc.), copy its response and paste it below.
+                    </p>
+                    <textarea
+                      className="modal-textarea"
+                      placeholder='{"tags": [...], "bars": [...]}'
+                      value={jsonInput}
+                      onChange={(e) => setJsonInput(e.target.value)}
+                      rows={8}
+                      data-testid="hp-sig-ai-input"
+                    />
+                    {llmValidation && (
+                      <div className="modal-validation invalid">
+                        <span className="modal-validation-icon">{'\u2717'}</span>
+                        <span className="modal-validation-text">{llmValidation.error}</span>
+                      </div>
+                    )}
+                    <div className="sig-ai-recopy">
+                      Lost the prompt?{' '}
+                      <span className="sig-ai-recopy-link" onClick={handleRecopy}>
+                        {copied ? 'Copied!' : 'Copy again'}
+                      </span>
+                    </div>
+                  </>
+                )}
+                <div className="modal-actions">
+                  <button className="btn-modal secondary" onClick={() => { setJsonInput(''); setLlmStep('copy'); }}>
+                    Back
+                  </button>
+                  <button
+                    className="btn-modal primary"
+                    onClick={handleApplyLlm}
+                    disabled={!llmValidation?.valid || generating}
+                    data-testid="hp-sig-ai-save"
+                  >
+                    Save &amp; Refine &rarr;
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        ) : (
+          <>
         {/* Tab toggle */}
         <div className="hp-sig-tabs" data-testid="hp-sig-tabs">
           <button
             className={`hp-sig-tab${tab === 'manual' ? ' active' : ''}`}
             onClick={() => setTab('manual')}
           >
-            Rate Yourself
+            Refine
           </button>
           <button
             className={`hp-sig-tab${tab === 'llm' ? ' active' : ''}`}
@@ -275,6 +575,17 @@ export default function HeadphoneSignatureModal({
 
         {tab === 'manual' && (
           <div className="hp-sig-manual" data-testid="hp-sig-manual">
+            {/* Refining-from hint */}
+            {(() => {
+              const base = presetPerspective
+                ?? latestSig?.perspectives.find(p => p.source === 'llm')
+                ?? latestSig?.perspectives.find(p => p.source === 'preset');
+              return base ? (
+                <div className="sig-refining-from">
+                  Refining from <span className="sig-refining-from-label">{base.label}</span>
+                </div>
+              ) : null;
+            })()}
             {/* Preset dropdown — retains selected value */}
             <div className="hp-sig-preset-row">
               <label className="hp-sig-preset-label">Preset:</label>
@@ -399,13 +710,50 @@ export default function HeadphoneSignatureModal({
         {tab === 'llm' && (
           <div className="hp-sig-llm" data-testid="hp-sig-llm">
             <p className="modal-description">
-              Copy this prompt and paste it into any LLM to analyze <strong>{headphone.name}</strong>.
+              {hasApiKey
+                ? <>Generate a sound profile for <strong>{headphone.name}</strong> — how it colors bass, treble, warmth, and more — using your {availableProvider!.name} API key.</>
+                : <>Copy this prompt and paste it into any LLM to analyze <strong>{headphone.name}</strong>'s sound character — bass, treble, warmth, and more.</>
+              }
             </p>
-            <textarea className="modal-textarea" readOnly value={prompt} rows={8} />
-            <div className="modal-actions" style={{ marginBottom: 'var(--space-4)' }}>
-              <button className="btn-modal primary" onClick={handleCopy}>
-                {copied ? 'Copied!' : 'Copy to Clipboard'}
-              </button>
+            <button className="prompt-toggle" onClick={() => setShowPrompt((v) => !v)}>
+              <span className={`prompt-toggle-arrow${showPrompt ? ' open' : ''}`}>{'\u25B6'}</span>
+              View prompt
+            </button>
+            {showPrompt && (
+              <textarea className="modal-textarea" readOnly value={prompt} rows={8} />
+            )}
+            {generateError && (
+              <div className="modal-validation invalid">
+                <span className="modal-validation-icon">{'\u2717'}</span>
+                <span className="modal-validation-text">{generateError}</span>
+              </div>
+            )}
+            <div className="modal-footer" style={{ marginBottom: 'var(--space-4)' }}>
+              <span className="api-key-link" onClick={() => setShowPreferences(true)}>
+                {hasApiKey ? 'API key settings' : 'Have an API key? Use it instead'}
+                <span className="api-key-link-info" aria-label="Skip copy-paste by connecting your own API key">i</span>
+              </span>
+              <div className="modal-actions">
+                {hasApiKey ? (
+                  <>
+                    <button className="btn-modal secondary" onClick={handleCopy} disabled={generating}>
+                      {copied ? 'Copied!' : 'Copy Instead'}
+                    </button>
+                    <button
+                      className="btn-modal primary"
+                      onClick={handleGenerate}
+                      disabled={generating}
+                      data-testid="hp-sig-generate"
+                    >
+                      {generating ? 'Generating...' : `Generate with ${availableProvider!.name}`}
+                    </button>
+                  </>
+                ) : (
+                  <button className="btn-modal primary" onClick={handleCopy}>
+                    {copied ? 'Copied!' : 'Copy to Clipboard'}
+                  </button>
+                )}
+              </div>
             </div>
 
             <p className="modal-description">Paste the JSON response below:</p>
@@ -427,20 +775,47 @@ export default function HeadphoneSignatureModal({
                 </span>
               </div>
             )}
+            {llmValidation?.valid && (
+              <div className="sig-llm-tag-picker">
+                <span className="sig-llm-tag-label">Tag the LLM you copied from</span>
+                {LLM_TAG_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.id}
+                    className={`llm-tag-badge${selectedLlmTag === opt.id ? ' selected' : ''}`}
+                    onClick={() => setSelectedLlmTag(opt.id)}
+                  >
+                    {opt.name}
+                  </button>
+                ))}
+              </div>
+            )}
             <div className="modal-actions">
               <button className="btn-modal secondary" onClick={onClose}>Cancel</button>
+              {hasApiKey && (
+                <button
+                  className="btn-modal secondary"
+                  onClick={() => { setJsonInput(''); handleGenerate(); }}
+                  disabled={generating}
+                  data-testid="hp-sig-regenerate"
+                >
+                  {generating ? 'Generating...' : 'Generate Another'}
+                </button>
+              )}
               <button
                 className="btn-modal primary"
                 onClick={handleApplyLlm}
-                disabled={!llmValidation?.valid}
+                disabled={!llmValidation?.valid || generating}
                 data-testid="hp-sig-apply-llm"
               >
-                Apply to Bars &rarr;
+                Save &amp; Refine &rarr;
               </button>
             </div>
           </div>
         )}
+          </>
+        )}
       </div>
+      {showPreferences && <ApiKeyPreferencesModal onClose={() => setShowPreferences(false)} />}
     </div>
   );
 }

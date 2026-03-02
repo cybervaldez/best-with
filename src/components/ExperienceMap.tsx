@@ -12,6 +12,7 @@ interface Props {
   experienceNotes: Record<string, ExperienceNote | null>;
   onEditExperience: (hp: Headphone) => void;
   onSetHpSignature: (hp: Headphone) => void;
+  onSaveHpSignature: (hpId: string, sig: HeadphoneSignature) => void;
   // Spectrum props
   viewMode: ViewMode;
   onToggleView: (mode: ViewMode) => void;
@@ -23,7 +24,7 @@ interface Props {
 
 export default function ExperienceMap({
   headphones, songSignature, headphoneSignatures, experienceNotes,
-  onEditExperience, onSetHpSignature,
+  onEditExperience, onSetHpSignature, onSaveHpSignature,
   viewMode, onToggleView, spectrumSlots, spectrumHeadphones, spectrumSignatures,
   onRerollSlot,
 }: Props) {
@@ -32,16 +33,16 @@ export default function ExperienceMap({
     return (
       <section data-testid="experience-map">
         <div className="section-header">
-          <span>experience map</span>
+          <span>listening notes</span>
           <div className="exp-view-toggle">
             <button
               className={`exp-toggle-btn ${viewMode === 'palette' ? 'active' : ''}`}
               onClick={() => onToggleView('palette')}
-            >Palette</button>
+            >Tonal Palette</button>
             <button
               className={`exp-toggle-btn ${viewMode === 'mine' ? 'active' : ''}`}
               onClick={() => onToggleView('mine')}
-            >Mine</button>
+            >My Gear</button>
           </div>
         </div>
         <div className="exp-disabled" data-testid="exp-disabled">
@@ -58,16 +59,16 @@ export default function ExperienceMap({
   return (
     <section data-testid="experience-map">
       <div className="section-header">
-        <span>experience map</span>
+        <span>listening notes</span>
         <div className="exp-view-toggle">
           <button
             className={`exp-toggle-btn ${viewMode === 'palette' ? 'active' : ''}`}
             onClick={() => onToggleView('palette')}
-          >Spectrum</button>
+          >Tonal Palette</button>
           <button
             className={`exp-toggle-btn ${viewMode === 'mine' ? 'active' : ''}`}
             onClick={() => onToggleView('mine')}
-          >Collection</button>
+          >My Gear</button>
         </div>
       </div>
 
@@ -101,6 +102,7 @@ export default function ExperienceMap({
                 songSignature={songSignature}
                 storedNote={experienceNotes[hp.id] ?? null}
                 onEdit={() => onEditExperience(hp)}
+                onSaveHpSignature={(sig) => onSaveHpSignature(hp.id, sig)}
               />
             );
           })
@@ -142,6 +144,7 @@ export default function ExperienceMap({
                   songSignature={songSignature}
                   storedNote={experienceNotes[id] ?? null}
                   onEdit={() => onEditExperience(hp)}
+                  onSaveHpSignature={(sig) => onSaveHpSignature(id, sig)}
                 />
               ) : (
                 <ExperienceCardNeedsSig

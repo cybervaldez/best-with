@@ -35,8 +35,11 @@ function getAvailableFormFactors(brand: HeadphoneBrand): FormFactorFilter[] {
 export default function AddHeadphoneModal({ collectionIds, onAdd, onRemove, onClose }: Props) {
   const [activeBrand, setActiveBrand] = useState<HeadphoneBrand>('apple');
   const [formFactorFilter, setFormFactorFilter] = useState<FormFactorFilter>('all');
+  const [searchQuery, setSearchQuery] = useState('');
 
   const collectionSet = useMemo(() => new Set(collectionIds), [collectionIds]);
+
+  const isSearching = searchQuery.trim().length > 0;
 
   const availableFilters = useMemo(
     () => getAvailableFormFactors(activeBrand),
@@ -44,10 +47,18 @@ export default function AddHeadphoneModal({ collectionIds, onAdd, onRemove, onCl
   );
 
   const filteredPresets = useMemo(() => {
+    if (isSearching) {
+      const q = searchQuery.trim().toLowerCase();
+      return PRESETS.filter((p) =>
+        p.name.toLowerCase().includes(q) ||
+        p.specs.toLowerCase().includes(q) ||
+        p.baseline.tags.some((t) => t.toLowerCase().includes(q)),
+      );
+    }
     const brandPresets = getPresetsByBrand(activeBrand);
     if (formFactorFilter === 'all') return brandPresets;
     return brandPresets.filter((p) => p.formFactor === formFactorFilter);
-  }, [activeBrand, formFactorFilter]);
+  }, [activeBrand, formFactorFilter, searchQuery, isSearching]);
 
   // Check if a brand has presets
   const brandsWithPresets = useMemo(() => {
@@ -60,6 +71,7 @@ export default function AddHeadphoneModal({ collectionIds, onAdd, onRemove, onCl
     if (!brandsWithPresets.has(brand)) return;
     setActiveBrand(brand);
     setFormFactorFilter('all');
+    setSearchQuery('');
   }
 
   function handleCardClick(presetId: string) {
@@ -81,8 +93,18 @@ export default function AddHeadphoneModal({ collectionIds, onAdd, onRemove, onCl
         <h2 className="modal-title">Add Headphone</h2>
         <p className="modal-subtitle">Browse presets and add to your collection</p>
 
+        {/* Search */}
+        <input
+          className="add-hp-search"
+          type="text"
+          placeholder="Search by name, specs, or tags..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          data-testid="add-hp-search"
+        />
+
         {/* Brand tabs */}
-        <div className="add-hp-brands">
+        <div className={`add-hp-brands${isSearching ? ' dimmed' : ''}`}>
           {BRAND_LIST.map((brand) => {
             const hasBrand = brandsWithPresets.has(brand);
             const isActive = brand === activeBrand;
@@ -102,7 +124,7 @@ export default function AddHeadphoneModal({ collectionIds, onAdd, onRemove, onCl
         </div>
 
         {/* Form factor filters */}
-        <div className="add-hp-filters">
+        <div className={`add-hp-filters${isSearching ? ' dimmed' : ''}`}>
           {availableFilters.map((ff) => (
             <button
               key={ff}
@@ -117,7 +139,7 @@ export default function AddHeadphoneModal({ collectionIds, onAdd, onRemove, onCl
         {/* Preset grid */}
         <div className="add-hp-grid">
           {filteredPresets.length === 0 && (
-            <div className="add-hp-empty">No presets match this filter</div>
+            <div className="add-hp-empty">{isSearching ? `No results for "${searchQuery.trim()}"` : 'No presets match this filter'}</div>
           )}
           {filteredPresets.map((preset) => {
             const inCollection = collectionSet.has(preset.id);

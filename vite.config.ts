@@ -8,5 +8,10 @@ export default defineConfig({
     port: 5179,
     strictPort: true,
     host: true,
+    hmr: {
+      host: 'mac-mini',
+      port: 5179,
+      protocol: 'wss',
+    },
   },
 });

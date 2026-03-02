@@ -6,6 +6,7 @@ export function generateExperiencePrompt(
   songSignature: SongSignature,
   headphone: Headphone,
   hpSignature: HeadphoneSignature,
+  voicePromptHint?: string,
 ): string {
   const songBarsStr = songSignature.bars
     .map((b) => `  ${b.label}: ${b.level}`)
@@ -37,8 +38,12 @@ ${songSignature.sections!.map((s) => `    { "time": "${s.time}", "label": "${s.l
     ? `\n3. "sections" — an array matching the song structure above. For each section, describe how it sounds on THIS headphone. Keep each description to 1 sentence focused on what the listener notices.`
     : '';
 
-  return `Describe how this specific song sounds on this specific headphone. Focus on the EXPERIENCE — how the headphone's character shapes the listener's perception of this particular song. There is no "best" headphone — describe the unique coloration and experience this pairing creates.
+  const voiceBlock = voicePromptHint
+    ? `\nVOICE / PERSONALITY:\n${voicePromptHint.replace('{headphoneName}', headphone.name)}\n`
+    : '';
 
+  return `Describe how this specific song sounds on this specific headphone. Focus on the EXPERIENCE — how the headphone's character shapes the listener's perception of this particular song. There is no "best" headphone — describe the unique coloration and experience this pairing creates.
+${voiceBlock}
 SONG:
   Title: ${song.title}
   Artist: ${song.artist}
@@ -63,9 +68,10 @@ Based on the comparison above${hasSections ? ' and the song\'s structure' : ''},
 Respond with ONLY a JSON object:
 1. "tagline" — a short evocative one-liner describing the experience
 2. "description" — 2-3 sentences about how the song sounds on this headphone. Focus on what the listener FEELS, not frequency response.${sectionsInstruction}
-
+${voicePromptHint ? `${hasSections ? '4' : '3'}. "videoReviewUrl" — (optional) if you found a YouTube video review of this headphone by the specified reviewer, include the URL here. Omit this field if no video was found.\n` : ''}
 {
   "tagline": "A short evocative one-liner (e.g. \\"The close-your-eyes-on-the-train experience\\")",
-  "description": "2-3 sentences about the overall experience."${sectionsJsonExample}
+  "description": "2-3 sentences about the overall experience."${sectionsJsonExample}${voicePromptHint ? `,
+  "videoReviewUrl": "https://youtube.com/watch?v=... (optional, only if found)"` : ''}
 }`;
 }

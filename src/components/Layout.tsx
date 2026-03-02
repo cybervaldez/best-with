@@ -212,11 +212,22 @@ export default function Layout({ song, songs, selectedIndex, onSelectSong }: Pro
     if (preset && !hpSignatures[presetId]) {
       const customIds = customCategories.map((c) => c.id);
       const derived = deriveCategories(preset.baseline.bars, categoryRules, filterMode, customIds);
+      const presetPerspective = {
+        perspectiveId: 'preset-' + Date.now(),
+        label: preset.name,
+        tags: [...preset.baseline.tags],
+        bars: [...preset.baseline.bars],
+        category: derived.primary,
+        secondaryCategories: derived.secondary,
+        source: 'preset' as const,
+      };
       const sig: HeadphoneSignature = {
         tags: [...preset.baseline.tags],
         bars: [...preset.baseline.bars],
         category: derived.primary,
         secondaryCategories: derived.secondary,
+        perspectives: [presetPerspective],
+        defaultPerspectiveId: presetPerspective.perspectiveId,
       };
       saveHeadphoneSignature(presetId, sig);
       setHpSignatures((prev) => ({ ...prev, [presetId]: sig }));
@@ -273,7 +284,7 @@ export default function Layout({ song, songs, selectedIndex, onSelectSong }: Pro
             signature={signature}
             onGetSignature={() => setShowModal(true)}
           />
-          {signature && <SongSignatureDisplay signature={signature} onEdit={() => setShowModal(true)} />}
+          {signature && <SongSignatureDisplay signature={signature} onEdit={() => setShowModal(true)} onSave={handleSaveSignature} />}
         </main>
         <aside className="experience-column">
           <ExperienceMap
@@ -283,6 +294,13 @@ export default function Layout({ song, songs, selectedIndex, onSelectSong }: Pro
             experienceNotes={experienceNotes}
             onEditExperience={setEditExpTarget}
             onSetHpSignature={setHpModalTarget}
+            onSaveHpSignature={(hpId, sig) => {
+              const customIds = customCategories.map((c) => c.id);
+              const derived = deriveCategories(sig.bars, categoryRules, filterMode, customIds);
+              const withCategory = { ...sig, category: derived.primary, secondaryCategories: derived.secondary };
+              saveHeadphoneSignature(hpId, withCategory);
+              setHpSignatures((prev) => ({ ...prev, [hpId]: withCategory }));
+            }}
             viewMode={expViewMode}
             onToggleView={setExpViewMode}
             spectrumSlots={spectrumSlots}

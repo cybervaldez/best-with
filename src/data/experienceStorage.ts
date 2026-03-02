@@ -29,10 +29,16 @@ export function parseExperienceNoteJSON(raw: string): ExperienceNote {
     if (valid.length > 0) sections = valid;
   }
 
+  // Parse optional videoReviewUrl
+  const videoReviewUrl = typeof parsed.videoReviewUrl === 'string' && parsed.videoReviewUrl.trim()
+    ? parsed.videoReviewUrl.trim()
+    : undefined;
+
   return {
     tagline: parsed.tagline.trim(),
     description: parsed.description.trim(),
     ...(sections ? { sections } : {}),
+    ...(videoReviewUrl ? { videoReviewUrl } : {}),
     source: 'llm' as ExperienceNoteSource,
   };
 }

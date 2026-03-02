@@ -1,4 +1,4 @@
-import type { SongSignature, SongSection, BarLevel } from './types';
+import type { SongSignature, SongSection, BarLevel, SignaturePerspective } from './types';
 
 const STORAGE_PREFIX = 'song_signature_';
 
@@ -42,7 +42,6 @@ export function parseSongSignatureJSON(raw: string): SongSignature {
     throw new Error('All 6 bar labels must be unique');
   }
 
-  // Parse optional sections (backward-compatible)
   let sections: SongSection[] | undefined;
   if (Array.isArray(parsed.sections)) {
     const parsed_sections = parsed.sections
@@ -51,13 +50,27 @@ export function parseSongSignatureJSON(raw: string): SongSignature {
     if (parsed_sections.length > 0) sections = parsed_sections;
   }
 
-  return {
-    tags: parsed.tags,
-    bars: parsed.bars.map((b: { label: string; level: BarLevel }) => ({
-      label: b.label,
-      level: b.level,
-    })),
+  const tags = parsed.tags as string[];
+  const bars = parsed.bars.map((b: { label: string; level: BarLevel }) => ({
+    label: b.label,
+    level: b.level,
+  }));
+
+  const perspective: SignaturePerspective = {
+    perspectiveId: 'llm-' + Date.now(),
+    label: 'LLM',
+    tags,
+    bars,
     ...(sections ? { sections } : {}),
+    source: 'llm',
+  };
+
+  return {
+    tags,
+    bars,
+    ...(sections ? { sections } : {}),
+    perspectives: [perspective],
+    defaultPerspectiveId: perspective.perspectiveId,
   };
 }
 

@@ -58,7 +58,7 @@ export default function Sidebar({ headphones, songs, selectedIndex, onSelectSong
 
       <hr className="divider" />
 
-      <div className="sidebar-label">my collection</div>
+      <div className="sidebar-label">my gear</div>
       {headphones.map((hp) => (
         <div
           className="collection-item collection-item-clickable"
