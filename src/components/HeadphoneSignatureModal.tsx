@@ -90,7 +90,7 @@ export default function HeadphoneSignatureModal({
   const [jsonInput, setJsonInput] = useState('');
   const [showPreferences, setShowPreferences] = useState(false);
   const [showPrompt, setShowPrompt] = useState(false);
-  const [selectedLlmTag, setSelectedLlmTag] = useState<LlmTag>('other');
+  const [selectedLlmTag, setSelectedLlmTag] = useState<LlmTag | null>(null);
   const [latestSig, setLatestSig] = useState<HeadphoneSignature | null>(existingSignature);
   const [generating, setGenerating] = useState(false);
   const [generateError, setGenerateError] = useState<string | null>(null);
@@ -106,6 +106,18 @@ export default function HeadphoneSignatureModal({
   const prompt = generateHeadphoneSignaturePrompt(headphone);
 
   const strengthBars = useMemo(() => barsToStrengthBars(bars), [bars]);
+
+  const baseBarsMap = useMemo<Record<string, number> | null>(() => {
+    const base = presetPerspective
+      ?? latestSig?.perspectives.find(p => p.source === 'llm')
+      ?? latestSig?.perspectives.find(p => p.source === 'preset');
+    if (!base) return null;
+    const map: Record<string, number> = {};
+    for (const bar of base.bars) {
+      map[bar.label] = LEVEL_TO_NUMBER[bar.level] ?? 3;
+    }
+    return map;
+  }, [presetPerspective, latestSig]);
   const customIds = useMemo(() => customCategories.map((c) => c.id), [customCategories]);
   const liveCategories: DerivedCategories = useMemo(
     () => deriveCategories(strengthBars, categoryRules, filterMode, customIds),
@@ -300,7 +312,7 @@ export default function HeadphoneSignatureModal({
       category: sig.category,
       secondaryCategories: sig.secondaryCategories,
       source: 'llm',
-      llmTag: selectedLlmTag,
+      llmTag: selectedLlmTag ?? 'other',
     };
 
     // Save immediately with LLM perspective — keep existing manual + preset
@@ -401,6 +413,7 @@ export default function HeadphoneSignatureModal({
 
   return (
     <div className="modal-overlay" onClick={handleOverlayClick}>
+      <div className="sig-ai-modal-wrapper">
       <div className="modal-panel hp-sig-modal" data-testid="hp-sig-modal">
         <button className="modal-close" onClick={onClose} aria-label="Close">&times;</button>
         <h2 className="modal-title">{headphone.name}</h2>
@@ -488,16 +501,11 @@ export default function HeadphoneSignatureModal({
                             <span className={`sig-ai-preview-bar-level level-${bar.level}`}>{bar.level.replace('-', ' ')}</span>
                           </div>
                         ))}
+                        <div className="sig-ai-preview-bar sig-ai-preview-bar-nobg">
+                          <span className="sig-ai-preview-bar-label">Tagged as</span>
+                          <span className="sig-ai-preview-bar-tags">{llmValidation.sig.tags.join(', ')}</span>
+                        </div>
                       </div>
-                      <div className="sig-ai-preview-tags">
-                        {llmValidation.sig.tags.map((tag) => (
-                          <span className="tag" key={tag}>{tag}</span>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="sig-ai-recopy">
-                      Not what you expected?{' '}
-                      <span className="sig-ai-recopy-link" onClick={() => setJsonInput('')}>Paste another response</span>
                     </div>
                     <div className="sig-llm-tag-picker sig-llm-tag-picker-centered">
                       <span className="sig-llm-tag-label">Tag the LLM you copied from</span>
@@ -505,7 +513,7 @@ export default function HeadphoneSignatureModal({
                         <button
                           key={opt.id}
                           className={`llm-tag-badge${selectedLlmTag === opt.id ? ' selected' : ''}`}
-                          onClick={() => setSelectedLlmTag(opt.id)}
+                          onClick={() => setSelectedLlmTag(selectedLlmTag === opt.id ? null : opt.id)}
                         >
                           {opt.name}
                         </button>
@@ -539,18 +547,20 @@ export default function HeadphoneSignatureModal({
                     </div>
                   </>
                 )}
-                <div className="modal-actions">
-                  <button className="btn-modal secondary" onClick={() => { setJsonInput(''); setLlmStep('copy'); }}>
-                    Back
-                  </button>
-                  <button
-                    className="btn-modal primary"
-                    onClick={handleApplyLlm}
-                    disabled={!llmValidation?.valid || generating}
-                    data-testid="hp-sig-ai-save"
-                  >
-                    Save &amp; Refine &rarr;
-                  </button>
+                <div className="modal-footer">
+                  <div className="modal-actions">
+                    <button className="btn-modal secondary" onClick={() => { setJsonInput(''); setLlmStep('copy'); }}>
+                      Back
+                    </button>
+                    <button
+                      className="btn-modal primary"
+                      onClick={handleApplyLlm}
+                      disabled={!llmValidation?.valid || generating}
+                      data-testid="hp-sig-ai-save"
+                    >
+                      Save &amp; Refine &rarr;
+                    </button>
+                  </div>
                 </div>
               </>
             )}
@@ -606,6 +616,10 @@ export default function HeadphoneSignatureModal({
               {BAR_LABELS.map((label) => {
                 const level = bars[label] ?? 3;
                 const readout = getSingleReadout(label, level);
+                const baseNum = baseBarsMap?.[label] ?? null;
+                const curPos = levelToPosition(level);
+                const basePos = baseNum !== null ? TICK_POSITIONS[baseNum - 1] : 0;
+                const delta = baseNum !== null ? level - baseNum : 0;
                 return (
                   <div className="hp-bar-row" key={label}>
                     <span className="range-label" title={BAR_DESCRIPTIONS[label]}>
@@ -624,10 +638,21 @@ export default function HeadphoneSignatureModal({
                         {TICK_POSITIONS.map((pos, i) => (
                           <div key={i} className="range-tick" style={{ left: `${pos}%` }} />
                         ))}
+                        {/* Fill + overlays */}
+                        <div className="range-track-fill" style={{ width: `${curPos}%` }} />
+                        {baseNum !== null && delta < 0 && (
+                          <div className="range-cut-void" style={{ left: `${curPos}%`, width: `${basePos - curPos}%` }} />
+                        )}
+                        {baseNum !== null && delta > 0 && (
+                          <div className="range-boost-fill" style={{ left: `${basePos}%`, width: `${curPos - basePos}%` }} />
+                        )}
+                        {baseNum !== null && delta !== 0 && (
+                          <div className="hp-bar-marker-ghost" style={{ left: `${basePos}%` }} />
+                        )}
                         {/* Value marker */}
                         <div
                           className="hp-bar-marker"
-                          style={{ left: `${levelToPosition(level)}%` }}
+                          style={{ left: `${curPos}%` }}
                         />
                       </div>
                       {/* Tick labels — clickable */}
@@ -649,6 +674,11 @@ export default function HeadphoneSignatureModal({
                     </div>
                     <div className="range-controls">
                       {readout && <span className="range-hz-readout">{readout}</span>}
+                      {baseNum !== null && delta !== 0 && (
+                        <span className={`range-delta ${delta < 0 ? 'cut' : 'boost'}`}>
+                          {delta > 0 ? `+${delta}` : delta}
+                        </span>
+                      )}
                     </div>
                   </div>
                 );
@@ -814,6 +844,13 @@ export default function HeadphoneSignatureModal({
         )}
           </>
         )}
+      </div>
+      {modalView === 'ai' && llmStep === 'paste' && llmValidation?.valid && (
+        <div className="sig-ai-float-below">
+          Not what you expected?{' '}
+          <span className="sig-ai-recopy-link" onClick={() => setJsonInput('')}>Paste another response</span>
+        </div>
+      )}
       </div>
       {showPreferences && <ApiKeyPreferencesModal onClose={() => setShowPreferences(false)} />}
     </div>

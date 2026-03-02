@@ -69,7 +69,7 @@ export default function SongSignatureModal({ song, existingSignature, onSave, on
   const [jsonInput, setJsonInput] = useState('');
   const [showPreferences, setShowPreferences] = useState(false);
   const [showPrompt, setShowPrompt] = useState(false);
-  const [selectedLlmTag, setSelectedLlmTag] = useState<LlmTag>('other');
+  const [selectedLlmTag, setSelectedLlmTag] = useState<LlmTag | null>(null);
   const [generating, setGenerating] = useState(false);
   const [generateError, setGenerateError] = useState<string | null>(null);
 
@@ -83,6 +83,16 @@ export default function SongSignatureModal({ song, existingSignature, onSave, on
 
   const prompt = generateSignaturePrompt(song);
   const strengthBars = useMemo(() => barsToStrengthBars(bars), [bars]);
+
+  const baseBarsMap = useMemo<Record<string, number> | null>(() => {
+    const base = latestSig?.perspectives.find(p => p.source === 'llm');
+    if (!base) return null;
+    const map: Record<string, number> = {};
+    for (const bar of base.bars) {
+      map[bar.label] = LEVEL_TO_NUMBER[bar.level] ?? 3;
+    }
+    return map;
+  }, [latestSig]);
 
   const validation = useMemo<{ valid: true; sig: SongSignature } | { valid: false; error: string } | null>(() => {
     if (!jsonInput.trim()) return null;
@@ -248,7 +258,7 @@ export default function SongSignatureModal({ song, existingSignature, onSave, on
 
     // Tag the LLM perspective — label "Breakdown" per audiophile convention
     if (sig.perspectives && sig.perspectives.length > 0) {
-      sig.perspectives[0].llmTag = selectedLlmTag;
+      sig.perspectives[0].llmTag = selectedLlmTag ?? 'other';
       sig.perspectives[0].label = 'Breakdown';
     }
 
@@ -314,6 +324,7 @@ export default function SongSignatureModal({ song, existingSignature, onSave, on
 
   return (
     <div className="modal-overlay" onClick={handleOverlayClick}>
+      <div className="sig-ai-modal-wrapper">
       <div className="modal-panel hp-sig-modal" data-testid="song-sig-modal">
         <button className="modal-close" onClick={onClose} aria-label="Close">&times;</button>
         <h2 className="modal-title">{song.title}</h2>
@@ -389,16 +400,11 @@ export default function SongSignatureModal({ song, existingSignature, onSave, on
                             <span className={`sig-ai-preview-bar-level level-${bar.level}`}>{bar.level.replace('-', ' ')}</span>
                           </div>
                         ))}
+                        <div className="sig-ai-preview-bar sig-ai-preview-bar-nobg">
+                          <span className="sig-ai-preview-bar-label">Tagged as</span>
+                          <span className="sig-ai-preview-bar-tags">{validation.sig.tags.join(', ')}</span>
+                        </div>
                       </div>
-                      <div className="sig-ai-preview-tags">
-                        {validation.sig.tags.map((tag) => (
-                          <span className="tag" key={tag}>{tag}</span>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="sig-ai-recopy">
-                      Not what you expected?{' '}
-                      <span className="sig-ai-recopy-link" onClick={() => setJsonInput('')}>Paste another response</span>
                     </div>
                     <div className="sig-llm-tag-picker sig-llm-tag-picker-centered">
                       <span className="sig-llm-tag-label">Tag the LLM you copied from</span>
@@ -406,7 +412,7 @@ export default function SongSignatureModal({ song, existingSignature, onSave, on
                         <button
                           key={opt.id}
                           className={`llm-tag-badge${selectedLlmTag === opt.id ? ' selected' : ''}`}
-                          onClick={() => setSelectedLlmTag(opt.id)}
+                          onClick={() => setSelectedLlmTag(selectedLlmTag === opt.id ? null : opt.id)}
                         >
                           {opt.name}
                         </button>
@@ -440,18 +446,20 @@ export default function SongSignatureModal({ song, existingSignature, onSave, on
                     </div>
                   </>
                 )}
-                <div className="modal-actions">
-                  <button className="btn-modal secondary" onClick={() => { setJsonInput(''); setLlmStep('copy'); }}>
-                    Back
-                  </button>
-                  <button
-                    className="btn-modal primary"
-                    onClick={handleSaveLlm}
-                    disabled={!validation?.valid || generating}
-                    data-testid="song-sig-ai-save"
-                  >
-                    Save &amp; Refine &rarr;
-                  </button>
+                <div className="modal-footer">
+                  <div className="modal-actions">
+                    <button className="btn-modal secondary" onClick={() => { setJsonInput(''); setLlmStep('copy'); }}>
+                      Back
+                    </button>
+                    <button
+                      className="btn-modal primary"
+                      onClick={handleSaveLlm}
+                      disabled={!validation?.valid || generating}
+                      data-testid="song-sig-ai-save"
+                    >
+                      Save &amp; Refine &rarr;
+                    </button>
+                  </div>
                 </div>
               </>
             )}
@@ -490,6 +498,10 @@ export default function SongSignatureModal({ song, existingSignature, onSave, on
               {BAR_LABELS.map((label) => {
                 const level = bars[label] ?? 3;
                 const readout = getSingleReadout(label, level);
+                const baseNum = baseBarsMap?.[label] ?? null;
+                const curPos = levelToPosition(level);
+                const basePos = baseNum !== null ? TICK_POSITIONS[baseNum - 1] : 0;
+                const delta = baseNum !== null ? level - baseNum : 0;
                 return (
                   <div className="hp-bar-row" key={label}>
                     <span className="range-label" title={BAR_DESCRIPTIONS[label]}>
@@ -507,9 +519,19 @@ export default function SongSignatureModal({ song, existingSignature, onSave, on
                         {TICK_POSITIONS.map((pos, i) => (
                           <div key={i} className="range-tick" style={{ left: `${pos}%` }} />
                         ))}
+                        <div className="range-track-fill" style={{ width: `${curPos}%` }} />
+                        {baseNum !== null && delta < 0 && (
+                          <div className="range-cut-void" style={{ left: `${curPos}%`, width: `${basePos - curPos}%` }} />
+                        )}
+                        {baseNum !== null && delta > 0 && (
+                          <div className="range-boost-fill" style={{ left: `${basePos}%`, width: `${curPos - basePos}%` }} />
+                        )}
+                        {baseNum !== null && delta !== 0 && (
+                          <div className="hp-bar-marker-ghost" style={{ left: `${basePos}%` }} />
+                        )}
                         <div
                           className="hp-bar-marker"
-                          style={{ left: `${levelToPosition(level)}%` }}
+                          style={{ left: `${curPos}%` }}
                         />
                       </div>
                       <div className="range-tick-labels">
@@ -530,6 +552,11 @@ export default function SongSignatureModal({ song, existingSignature, onSave, on
                     </div>
                     <div className="range-controls">
                       {readout && <span className="range-hz-readout">{readout}</span>}
+                      {baseNum !== null && delta !== 0 && (
+                        <span className={`range-delta ${delta < 0 ? 'cut' : 'boost'}`}>
+                          {delta > 0 ? `+${delta}` : delta}
+                        </span>
+                      )}
                     </div>
                   </div>
                 );
@@ -730,6 +757,13 @@ export default function SongSignatureModal({ song, existingSignature, onSave, on
         )}
           </>
         )}
+      </div>
+      {modalView === 'ai' && llmStep === 'paste' && validation?.valid && (
+        <div className="sig-ai-float-below">
+          Not what you expected?{' '}
+          <span className="sig-ai-recopy-link" onClick={() => setJsonInput('')}>Paste another response</span>
+        </div>
+      )}
       </div>
       {showPreferences && <ApiKeyPreferencesModal onClose={() => setShowPreferences(false)} />}
     </div>

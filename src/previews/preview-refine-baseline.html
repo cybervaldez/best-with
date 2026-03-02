@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Baseline — Both Bar Systems (L→Value Fill)</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #08080f;
+    color: #f0f0f5;
+    font-family: 'Inter', system-ui, sans-serif;
+    padding: 24px;
+    line-height: 1.6;
+  }
+  h1 {
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: #a78bfa;
+  }
+  .page-desc {
+    font-size: 0.75rem;
+    color: #7a7a92;
+    margin-bottom: 28px;
+    max-width: 700px;
+  }
+  .section-label {
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: #9898b0;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 12px;
+  }
+  .section-desc {
+    font-size: 0.6rem;
+    color: #5a5a72;
+    margin-bottom: 16px;
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+  }
+
+  .panels {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    max-width: 1100px;
+  }
+  .panel {
+    background: rgba(255,255,255,0.025);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px;
+    padding: 20px 24px;
+  }
+
+  /* ═══════════════════════════════════════════
+     SYSTEM A: StrengthBars (sound signature cards)
+     - bar-track: 6px, overflow hidden
+     - bar-fill: L→value (left-aligned)
+     - READ-ONLY display
+     ═══════════════════════════════════════════ */
+
+  .strength-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .a-bar-row {
+    display: grid;
+    grid-template-columns: 76px 1fr 40px;
+    align-items: center;
+    gap: 10px;
+  }
+  .a-bar-label {
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    font-size: 0.6rem;
+    font-weight: 500;
+    color: #7a7a92;
+    text-align: right;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .a-bar-track {
+    flex: 1;
+    height: 6px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 3px;
+    position: relative;
+    overflow: visible;
+  }
+  .a-bar-fill {
+    position: absolute;
+    top: 1px;
+    left: 0;
+    height: calc(100% - 2px);
+    border-radius: 2px;
+    background: linear-gradient(90deg, #a78bfa, #f472b6);
+  }
+  .a-bar-readout {
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    font-size: 0.55rem;
+    color: #5a5a72;
+  }
+
+
+  /* ═══════════════════════════════════════════
+     SYSTEM B: Bar Editor (refine tab in modal)
+     - range-track: 2px thin line, overflow visible
+     - b-track-fill: gradient from L to marker
+     - hp-bar-marker: 10px purple dot
+     - range-tick: marks at [10, 30, 50, 70, 90]%
+     - INTERACTIVE editor
+     ═══════════════════════════════════════════ */
+
+  .editor-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .b-bar-row {
+    display: grid;
+    grid-template-columns: 90px 1fr 60px;
+    align-items: center;
+    gap: 10px;
+  }
+  .b-bar-label {
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    font-size: 0.6rem;
+    font-weight: 500;
+    color: #7a7a92;
+    text-align: right;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .b-bar-label .freq {
+    display: block;
+    font-size: 0.5rem;
+    color: #5a5a72;
+    font-weight: 400;
+  }
+  .b-editor {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .b-track {
+    position: relative;
+    height: 2px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 1px;
+    overflow: visible;
+    margin-top: 10px;
+  }
+  .b-track-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    border-radius: 1px;
+    background: linear-gradient(90deg, #a78bfa, #f472b6);
+    z-index: 1;
+  }
+  .b-tick {
+    position: absolute;
+    top: -6px;
+    width: 1px;
+    height: 14px;
+    background: rgba(255,255,255,0.06);
+    transform: translateX(-50%);
+  }
+  .b-marker {
+    position: absolute;
+    top: 50%;
+    width: 10px;
+    height: 10px;
+    background: #a78bfa;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 6px #a78bfa;
+    z-index: 3;
+  }
+  .b-tick-labels {
+    position: relative;
+    height: 12px;
+    margin-top: 4px;
+  }
+  .b-tick-label {
+    position: absolute;
+    transform: translateX(-50%);
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    font-size: 0.5rem;
+    font-weight: 500;
+    color: #7a7a92;
+    letter-spacing: 0.02em;
+  }
+  .b-tick-label.active {
+    color: #9898b0;
+    font-weight: 600;
+  }
+  .b-readout {
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    font-size: 0.55rem;
+    color: #5a5a72;
+  }
+
+
+  /* ═══════════════════════════════════════════
+     REDUCTION OVERLAYS
+     ═══════════════════════════════════════════ */
+
+  /* ── System A reduction ── */
+  .reduction-bars-a {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .ra-bar-row {
+    display: grid;
+    grid-template-columns: 76px 1fr 40px;
+    align-items: center;
+    gap: 10px;
+  }
+  .ra-bar-label {
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    font-size: 0.6rem;
+    font-weight: 500;
+    color: #7a7a92;
+    text-align: right;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .ra-bar-track {
+    position: relative;
+    height: 6px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 3px;
+    overflow: visible;
+  }
+  /* Base fill — gradient, left-aligned, at BASE level width */
+  .ra-base-fill {
+    position: absolute;
+    top: 1px;
+    left: 0;
+    height: calc(100% - 2px);
+    border-radius: 2px;
+    background: linear-gradient(90deg, #a78bfa, #f472b6);
+    opacity: 0.35;
+  }
+  /* Cut void — bg-colored block over the removed portion */
+  .ra-cut-void {
+    position: absolute;
+    top: -1px;
+    height: calc(100% + 2px);
+    background: #08080f;
+    border: 1px dashed rgba(255,255,255,0.2);
+    border-radius: 2px;
+    z-index: 2;
+  }
+  /* Cut marker — vertical dashed line at the user's fill edge */
+  .ra-cut-marker {
+    position: absolute;
+    top: -5px;
+    width: 1px;
+    height: calc(100% + 10px);
+    border-left: 1px dashed rgba(255,255,255,0.3);
+    z-index: 3;
+  }
+  /* Delta badge */
+  .ra-delta {
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    font-size: 0.6rem;
+    font-weight: 600;
+    color: #22d3ee;
+    text-align: center;
+    letter-spacing: 0.02em;
+  }
+
+  /* ── System B reduction: cut void on the track ── */
+  .rb-cut-void {
+    position: absolute;
+    top: -3px;
+    height: calc(100% + 6px);
+    background: #08080f;
+    border: 1px dashed rgba(255,255,255,0.2);
+    border-radius: 2px;
+    z-index: 2;
+  }
+  /* Cut marker — vertical dashed line at the user's fill edge (editor) */
+  .rb-cut-marker {
+    position: absolute;
+    top: -7px;
+    width: 1px;
+    height: calc(100% + 14px);
+    border-left: 1px dashed rgba(255,255,255,0.3);
+    z-index: 3;
+  }
+  /* Ghost marker showing where the base was */
+  .b-marker-ghost {
+    position: absolute;
+    top: 50%;
+    width: 10px;
+    height: 10px;
+    border: 1.5px dashed rgba(167,139,250,0.35);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 4;
+    background: transparent;
+  }
+
+
+  /* ═══════════════════════════════════════════
+     ADDITION OVERLAYS — pulsing white fill
+     ═══════════════════════════════════════════ */
+
+  /* System A boost fill — static, very subtle brightness bump */
+  .ra-boost-fill {
+    position: absolute;
+    top: 1px;
+    height: calc(100% - 2px);
+    border-radius: 2px;
+    background: linear-gradient(90deg, #b495fd, #f680be);
+    z-index: 2;
+  }
+  /* System B boost fill — same 2px height, slower pulse */
+  .rb-boost-fill {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    border-radius: 1px;
+    background: linear-gradient(90deg, #d4bcff, #faadd4);
+    z-index: 2;
+    animation: boost-pulse 5s ease-in-out infinite;
+  }
+  @keyframes boost-pulse {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+  }
+  /* Addition delta badge */
+  .ra-delta.boost {
+    color: #f59e0b;
+  }
+
+</style>
+</head>
+<body>
+<h1>Baseline — Both Bar Systems (L→Value Fill)</h1>
+<p class="page-desc">
+  Both systems now use left-to-value fill. Fill starts from L and extends to the value position.<br>
+  System A: 6px track with gradient fill. System B: 2px track with gradient fill + dot marker.
+</p>
+
+<div class="panels">
+
+  <!-- ── SYSTEM A: StrengthBars (card display) ── -->
+  <div class="panel">
+    <div class="section-label">System A: Sound Signature Card</div>
+    <div class="section-desc">
+      6px track, gradient fill from L to value, overflow hidden.<br>
+      Read-only. Used on experience cards in the main view.
+    </div>
+    <div class="strength-bars" id="system-a"></div>
+  </div>
+
+  <!-- ── SYSTEM B: Bar Editor (refine tab) ── -->
+  <div class="panel">
+    <div class="section-label">System B: Bar Editor (Refine Tab)</div>
+    <div class="section-desc">
+      2px track, gradient fill from L to marker, dot marker on top, tick marks.<br>
+      Interactive. Used in the signature modal refine tab.
+    </div>
+    <div class="editor-bars" id="system-b"></div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     REDUCTION: User take (cut from AI base)
+     ═══════════════════════════════════════════════════ -->
+<h1 style="margin-top: 40px;">Reduction — User Take</h1>
+<p class="page-desc">
+  AI set a base value. User reduced it. The cut overlay shows what was removed.<br>
+  Base fill (dimmed) shows AI reference from L→base. Void covers the removed portion (user→base). Delta badge on the right.
+</p>
+
+<div class="panels">
+
+  <!-- Reduction on System A -->
+  <div class="panel">
+    <div class="section-label">Reduction on System A (Card Bars)</div>
+    <div class="section-desc">
+      Dimmed gradient from L→base. Void block eats into it from user→base.
+    </div>
+    <div id="reduction-a"></div>
+  </div>
+
+  <!-- Reduction on System B -->
+  <div class="panel">
+    <div class="section-label">Reduction on System B (Bar Editor)</div>
+    <div class="section-desc">
+      Fill from L→user. Void between user→base. Ghost dot at base, solid dot at user.
+    </div>
+    <div class="editor-bars" id="reduction-b"></div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     ADDITION: User take (boost from AI base)
+     ═══════════════════════════════════════════════════ -->
+<h1 style="margin-top: 40px;">Addition — User Take</h1>
+<p class="page-desc">
+  AI set a base value. User boosted it. The pulsing white fill shows what was added.<br>
+  Base fill (dimmed) from L→base. Pulsing white fill on the added portion (base→user). Delta badge on the right.
+</p>
+
+<div class="panels">
+
+  <!-- Addition on System A -->
+  <div class="panel">
+    <div class="section-label">Addition on System A (Card Bars)</div>
+    <div class="section-desc">
+      Dimmed gradient from L→base. Pulsing white fill from base→user.
+    </div>
+    <div id="addition-a"></div>
+  </div>
+
+  <!-- Addition on System B -->
+  <div class="panel">
+    <div class="section-label">Addition on System B (Bar Editor)</div>
+    <div class="section-desc">
+      Fill from L→user. Pulsing white from base→user. Ghost dot at base, solid dot at user.
+    </div>
+    <div class="editor-bars" id="addition-b"></div>
+  </div>
+
+</div>
+
+<script>
+const TICK_POS = [10, 30, 50, 70, 90];
+const TICK_LABELS = ['L', 'ML', 'M', 'MH', 'H'];
+const LEVEL_NAMES = ['low', 'mid-low', 'mid', 'mid-high', 'high'];
+
+const bars = [
+  { label: 'Bass',       freq: '20–250 Hz',       level: 4 },
+  { label: 'Vocal',      freq: '250 Hz–4 kHz',    level: 3 },
+  { label: 'Treble',     freq: '4–20 kHz',         level: 2 },
+  { label: 'Soundstage', freq: 'Narrow → Wide',    level: 4 },
+  { label: 'Dynamics',   freq: 'Comp → Exp',       level: 3 },
+  { label: 'Warmth',     freq: '200–500 Hz',       level: 5 },
+];
+
+// ── System A: fill from L (0%) to value tick position ──
+const sysA = document.getElementById('system-a');
+bars.forEach(bar => {
+  const fillWidth = TICK_POS[bar.level - 1]; // L=10%, ML=30%, M=50%, MH=70%, H=90%
+  const row = document.createElement('div');
+  row.className = 'a-bar-row';
+  row.innerHTML = `
+    <span class="a-bar-label">${bar.label}</span>
+    <div class="a-bar-track">
+      <div class="a-bar-fill" style="width:${fillWidth}%"></div>
+    </div>
+    <div class="a-bar-readout">${LEVEL_NAMES[bar.level - 1]}</div>
+  `;
+  sysA.appendChild(row);
+});
+
+// ── System B: fill from L to marker + dot marker on top ──
+const sysB = document.getElementById('system-b');
+bars.forEach(bar => {
+  const pos = TICK_POS[bar.level - 1];
+
+  let ticksHtml = '';
+  TICK_POS.forEach(p => {
+    ticksHtml += `<div class="b-tick" style="left:${p}%"></div>`;
+  });
+
+  let labelsHtml = '';
+  TICK_POS.forEach((p, i) => {
+    const isActive = (i + 1) === bar.level;
+    labelsHtml += `<span class="b-tick-label${isActive ? ' active' : ''}" style="left:${p}%">${TICK_LABELS[i]}</span>`;
+  });
+
+  const row = document.createElement('div');
+  row.className = 'b-bar-row';
+  row.innerHTML = `
+    <div class="b-bar-label">${bar.label}<span class="freq">${bar.freq}</span></div>
+    <div class="b-editor">
+      <div class="b-track">
+        ${ticksHtml}
+        <div class="b-track-fill" style="width:${pos}%"></div>
+        <div class="b-marker" style="left:${pos}%"></div>
+      </div>
+      <div class="b-tick-labels">
+        ${labelsHtml}
+      </div>
+    </div>
+    <div class="b-readout">${LEVEL_NAMES[bar.level - 1]}</div>
+  `;
+  sysB.appendChild(row);
+});
+
+// ═══════════════════════════════════════════
+// REDUCTION section — all bars are cuts (current < base)
+// ═══════════════════════════════════════════
+
+// Derive from baseline — base matches System A's level exactly
+const reductionBars = bars.map(bar => ({
+  ...bar,
+  base: bar.level,
+  current: Math.max(1, bar.level - 1),  // user reduced by 1 step each
+}));
+// Override a couple to show varying deltas
+reductionBars[4].current = 1;  // Dynamics: 3 → 1 (-2)
+reductionBars[5].current = 3;  // Warmth: 5 → 3 (-2)
+
+// ── Reduction on System A ──
+const redA = document.getElementById('reduction-a');
+const redAContainer = document.createElement('div');
+redAContainer.className = 'reduction-bars-a';
+
+reductionBars.forEach(bar => {
+  const delta = bar.current - bar.base;
+  const basePos = TICK_POS[bar.base - 1];
+  const curPos = TICK_POS[bar.current - 1];
+
+  const row = document.createElement('div');
+  row.className = 'ra-bar-row';
+
+  // Base fill: dimmed gradient from L (0%) to base position
+  let trackHtml = `<div class="ra-base-fill" style="width:${basePos}%"></div>`;
+
+  // Cut void: from user position to base position (the removed range)
+  const voidLeft = curPos;
+  const voidWidth = basePos - curPos;
+  trackHtml += `<div class="ra-cut-void" style="left:${voidLeft}%;width:${voidWidth}%"></div>`;
+  trackHtml += `<div class="ra-cut-marker" style="left:${curPos}%"></div>`;
+
+  row.innerHTML = `
+    <span class="ra-bar-label">${bar.label}</span>
+    <div class="ra-bar-track">${trackHtml}</div>
+    <div class="ra-delta">${delta}</div>
+  `;
+  redAContainer.appendChild(row);
+});
+redA.appendChild(redAContainer);
+
+// ── Reduction on System B ──
+const redB = document.getElementById('reduction-b');
+
+reductionBars.forEach(bar => {
+  const delta = bar.current - bar.base;
+  const basePos = TICK_POS[bar.base - 1];
+  const curPos = TICK_POS[bar.current - 1];
+
+  let ticksHtml = '';
+  TICK_POS.forEach(p => {
+    ticksHtml += `<div class="b-tick" style="left:${p}%"></div>`;
+  });
+
+  let labelsHtml = '';
+  TICK_POS.forEach((p, i) => {
+    const isBase = (i + 1) === bar.base;
+    const isCurrent = (i + 1) === bar.current;
+    const active = isBase || isCurrent;
+    labelsHtml += `<span class="b-tick-label${active ? ' active' : ''}" style="left:${p}%">${TICK_LABELS[i]}</span>`;
+  });
+
+  // Fill from L to user's current position
+  const fillHtml = `<div class="b-track-fill" style="width:${curPos}%"></div>`;
+
+  // Cut void from user position to base position
+  const voidLeft = curPos;
+  const voidWidth = basePos - curPos;
+  const voidHtml = `<div class="rb-cut-void" style="left:${voidLeft}%;width:${voidWidth}%"></div>`;
+  const cutMarkerHtml = `<div class="rb-cut-marker" style="left:${curPos}%"></div>`;
+
+  // Ghost marker at base position (dashed outline, no fill)
+  const ghostHtml = `<div class="b-marker-ghost" style="left:${basePos}%"></div>`;
+
+  const row = document.createElement('div');
+  row.className = 'b-bar-row';
+  row.innerHTML = `
+    <div class="b-bar-label">${bar.label}<span class="freq">${bar.freq}</span></div>
+    <div class="b-editor">
+      <div class="b-track">
+        ${ticksHtml}
+        ${fillHtml}
+        ${voidHtml}
+        ${cutMarkerHtml}
+        ${ghostHtml}
+        <div class="b-marker" style="left:${curPos}%"></div>
+      </div>
+      <div class="b-tick-labels">
+        ${labelsHtml}
+      </div>
+    </div>
+    <div class="b-readout" style="color:#22d3ee;">${delta}</div>
+  `;
+  redB.appendChild(row);
+});
+
+// ═══════════════════════════════════════════
+// ADDITION section — all bars are boosts (current > base)
+// ═══════════════════════════════════════════
+
+const additionBars = bars.map(bar => ({
+  ...bar,
+  base: bar.level,
+  current: Math.min(5, bar.level + 1),  // user boosted by 1 step each
+}));
+// Override a couple to show varying deltas
+additionBars[0].current = 5;  // Bass: 4 → 5 (+1) — already correct
+additionBars[4].current = 5;  // Dynamics: 3 → 5 (+2)
+additionBars[2].current = 4;  // Treble: 2 → 4 (+2)
+
+// ── Addition on System A ──
+const addA = document.getElementById('addition-a');
+const addAContainer = document.createElement('div');
+addAContainer.className = 'reduction-bars-a';
+
+additionBars.forEach(bar => {
+  const delta = bar.current - bar.base;
+  const basePos = TICK_POS[bar.base - 1];
+  const curPos = TICK_POS[bar.current - 1];
+
+  const row = document.createElement('div');
+  row.className = 'ra-bar-row';
+
+  // Base fill: dimmed gradient from L (0%) to base position
+  let trackHtml = `<div class="ra-base-fill" style="width:${basePos}%"></div>`;
+
+  // Boost fill: pulsing white from base to current (the added range)
+  const boostWidth = curPos - basePos;
+  trackHtml += `<div class="ra-boost-fill" style="left:${basePos}%;width:${boostWidth}%"></div>`;
+
+  row.innerHTML = `
+    <span class="ra-bar-label">${bar.label}</span>
+    <div class="ra-bar-track">${trackHtml}</div>
+    <div class="ra-delta boost">+${delta}</div>
+  `;
+  addAContainer.appendChild(row);
+});
+addA.appendChild(addAContainer);
+
+// ── Addition on System B ──
+const addB = document.getElementById('addition-b');
+
+additionBars.forEach(bar => {
+  const delta = bar.current - bar.base;
+  const basePos = TICK_POS[bar.base - 1];
+  const curPos = TICK_POS[bar.current - 1];
+
+  let ticksHtml = '';
+  TICK_POS.forEach(p => {
+    ticksHtml += `<div class="b-tick" style="left:${p}%"></div>`;
+  });
+
+  let labelsHtml = '';
+  TICK_POS.forEach((p, i) => {
+    const isBase = (i + 1) === bar.base;
+    const isCurrent = (i + 1) === bar.current;
+    const active = isBase || isCurrent;
+    labelsHtml += `<span class="b-tick-label${active ? ' active' : ''}" style="left:${p}%">${TICK_LABELS[i]}</span>`;
+  });
+
+  // Fill from L to base (the original range, dimmed)
+  const baseFillHtml = `<div class="b-track-fill" style="width:${basePos}%;opacity:0.35"></div>`;
+
+  // Boost fill: pulsing white from base to current
+  const boostWidth = curPos - basePos;
+  const boostHtml = `<div class="rb-boost-fill" style="left:${basePos}%;width:${boostWidth}%"></div>`;
+
+  // Ghost marker at base position
+  const ghostHtml = `<div class="b-marker-ghost" style="left:${basePos}%"></div>`;
+
+  const row = document.createElement('div');
+  row.className = 'b-bar-row';
+  row.innerHTML = `
+    <div class="b-bar-label">${bar.label}<span class="freq">${bar.freq}</span></div>
+    <div class="b-editor">
+      <div class="b-track">
+        ${ticksHtml}
+        ${baseFillHtml}
+        ${boostHtml}
+        ${ghostHtml}
+        <div class="b-marker" style="left:${curPos}%"></div>
+      </div>
+      <div class="b-tick-labels">
+        ${labelsHtml}
+      </div>
+    </div>
+    <div class="b-readout" style="color:#f59e0b;">+${delta}</div>
+  `;
+  addB.appendChild(row);
+});
+</script>
+</body>
+</html>

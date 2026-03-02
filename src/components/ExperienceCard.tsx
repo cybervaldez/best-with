@@ -39,11 +39,14 @@ export default function ExperienceCard({
   const hasHpPerspectives = hpPerspectives.length > 1;
   const hpDefaultId = hpSignature.defaultPerspectiveId;
   const [hpPreviewId, setHpPreviewId] = useState<string | null>(null);
+  const [hpHoverId, setHpHoverId] = useState<string | null>(null);
   const [showHpOverflow, setShowHpOverflow] = useState(false);
 
   const activeHpId = hpPreviewId ?? hpDefaultId;
-  const activeHpPerspective = hpPerspectives.find(p => p.perspectiveId === activeHpId) ?? hpPerspectives[0];
-  const displayBars = activeHpPerspective.bars;
+  // Hover temporarily previews a perspective; click commits it
+  const displayHpId = hpHoverId ?? activeHpId;
+  const displayHpPerspective = hpPerspectives.find(p => p.perspectiveId === displayHpId) ?? hpPerspectives[0];
+  const displayBars = displayHpPerspective.bars;
 
   // Reset when defaultVoiceId changes (e.g. user toggled default in edit modal)
   useEffect(() => {
@@ -104,6 +107,22 @@ export default function ExperienceCard({
 
   const visibleHpChips = showHpOverflow ? hpPerspectives : hpPerspectives.slice(0, MAX_VISIBLE_CHIPS);
   const hpOverflowCount = hpPerspectives.length - MAX_VISIBLE_CHIPS;
+
+  // Show diff overlay only on hover — once clicked, bars display without overlay
+  const baseBarsForOverlay = (() => {
+    if (!hpHoverId) return undefined;
+    // If hovered perspective has refinedFrom, use that
+    if (displayHpPerspective.refinedFrom) {
+      return hpPerspectives.find(p => p.perspectiveId === displayHpPerspective.refinedFrom)?.bars;
+    }
+    // Fallback: if hovered perspective is manual, diff against LLM or preset base
+    if (displayHpPerspective.source === 'manual') {
+      const base = hpPerspectives.find(p => p.source === 'llm')
+        ?? hpPerspectives.find(p => p.source === 'preset');
+      return base?.bars;
+    }
+    return undefined;
+  })();
 
   return (
     <div
@@ -179,7 +198,9 @@ export default function ExperienceCard({
                   <button
                     key={p.perspectiveId}
                     className={`perspective-chip${isActive ? ' active' : ''}${isDefault ? ' default' : ''}`}
-                    onClick={() => setHpPreviewId(p.perspectiveId)}
+                    onClick={() => { setHpPreviewId(p.perspectiveId); setHpHoverId(null); }}
+                    onMouseEnter={() => setHpHoverId(p.perspectiveId)}
+                    onMouseLeave={() => setHpHoverId(null)}
                   >
                     <span
                       className="perspective-star"
@@ -203,7 +224,7 @@ export default function ExperienceCard({
               )}
             </div>
           )}
-          <StrengthBars bars={displayBars} />
+          <StrengthBars bars={displayBars} baseBars={baseBarsForOverlay} />
           <div className="exp-card-footer" data-testid={`exp-source-${headphone.id}`}>
             <span className={`exp-source-badge ${displaySource === 'llm' ? 'ai' : 'manual'}`}>
               {displaySource === 'llm' && <span className="exp-ai-sparkle">{'\u2728'}</span>}
@@ -248,7 +269,9 @@ export default function ExperienceCard({
                   <button
                     key={p.perspectiveId}
                     className={`perspective-chip${isActive ? ' active' : ''}${isDefault ? ' default' : ''}`}
-                    onClick={() => setHpPreviewId(p.perspectiveId)}
+                    onClick={() => { setHpPreviewId(p.perspectiveId); setHpHoverId(null); }}
+                    onMouseEnter={() => setHpHoverId(p.perspectiveId)}
+                    onMouseLeave={() => setHpHoverId(null)}
                   >
                     <span
                       className="perspective-star"
@@ -272,7 +295,7 @@ export default function ExperienceCard({
               )}
             </div>
           )}
-          <StrengthBars bars={displayBars} />
+          <StrengthBars bars={displayBars} baseBars={baseBarsForOverlay} />
           <div className="exp-needs-edit" onClick={onEdit}>
             Edit experience to describe how this song sounds on {headphone.name}
           </div>

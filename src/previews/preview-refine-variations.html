@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Refine Overlay — Focused Variations</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #08080f;
+    color: #f0f0f5;
+    font-family: 'Inter', system-ui, sans-serif;
+    padding: 24px;
+    line-height: 1.6;
+  }
+  h1 {
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: #a78bfa;
+  }
+  .page-desc {
+    font-size: 0.75rem;
+    color: #7a7a92;
+    margin-bottom: 28px;
+    max-width: 700px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    max-width: 1100px;
+  }
+  .card {
+    background: rgba(255,255,255,0.025);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px;
+    padding: 18px 22px;
+  }
+  .card-title {
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #f0f0f5;
+    margin-bottom: 3px;
+  }
+  .card-desc {
+    font-size: 0.65rem;
+    color: #7a7a92;
+    margin-bottom: 18px;
+    line-height: 1.5;
+  }
+
+  /* ── Bar row ── */
+  .bar-row {
+    display: grid;
+    grid-template-columns: 90px 1fr 40px;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .bar-row:last-child { margin-bottom: 0; }
+
+  .bar-label {
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    font-size: 0.6rem;
+    font-weight: 500;
+    color: #7a7a92;
+    text-align: right;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .bar-label .freq {
+    display: block;
+    font-size: 0.5rem;
+    color: #5a5a72;
+    font-weight: 400;
+  }
+
+  /* Track — 6px (matches StrengthBars) */
+  .track {
+    position: relative;
+    height: 6px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 3px;
+    overflow: visible;
+  }
+
+  /* Tick marks */
+  .tick {
+    position: absolute;
+    top: -4px;
+    width: 1px;
+    height: 14px;
+    background: rgba(255,255,255,0.05);
+    transform: translateX(-50%);
+  }
+
+  /* Fill 1: Base reference — centered gradient (like StrengthBars) */
+  .base-fill {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    height: 100%;
+    border-radius: 3px;
+    background: linear-gradient(90deg, #a78bfa, #f472b6);
+    opacity: 0.35;
+    z-index: 1;
+  }
+
+  /* Current marker dot */
+  .marker {
+    position: absolute;
+    top: 50%;
+    width: 10px;
+    height: 10px;
+    background: #a78bfa;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 6px #a78bfa;
+    z-index: 5;
+  }
+
+  /* Delta badge */
+  .delta-col {
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    font-size: 0.6rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-align: center;
+  }
+  .delta-col.boost { color: #f59e0b; }
+  .delta-col.cut { color: #22d3ee; }
+  .delta-col.unchanged { color: #5a5a72; }
+
+  /* ═══════════════════════════════════════════
+     VARIATIONS
+     Fill 1: base (centered gradient, always)
+     Fill 2: boost (white) / cut (void+dashed)
+             on EACH side symmetrically
+     ═══════════════════════════════════════════ */
+
+  /* ── V1: Static, standard ── */
+  .v1 .boost-fill {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    background: rgba(255,255,255,0.3);
+    border-radius: 2px;
+    z-index: 2;
+  }
+  .v1 .cut-void {
+    position: absolute;
+    top: -1px;
+    height: calc(100% + 2px);
+    background: #08080f;
+    border: 1px dashed rgba(255,255,255,0.2);
+    border-radius: 2px;
+    z-index: 2;
+  }
+
+  /* ── V2: Brighter boost ── */
+  .v2 .boost-fill {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    background: rgba(255,255,255,0.5);
+    border-radius: 2px;
+    z-index: 2;
+  }
+  .v2 .cut-void {
+    position: absolute;
+    top: -1px;
+    height: calc(100% + 2px);
+    background: #08080f;
+    border: 1px dashed rgba(255,255,255,0.15);
+    border-radius: 2px;
+    z-index: 2;
+  }
+
+  /* ── V3: Subtle pulse on boost ── */
+  .v3 .boost-fill {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    background: rgba(255,255,255,0.35);
+    border-radius: 2px;
+    z-index: 2;
+    animation: boost-breathe 3s ease-in-out infinite;
+  }
+  @keyframes boost-breathe {
+    0%, 100% { opacity: 0.7; }
+    50% { opacity: 1; }
+  }
+  .v3 .cut-void {
+    position: absolute;
+    top: -1px;
+    height: calc(100% + 2px);
+    background: #08080f;
+    border: 1px dashed rgba(255,255,255,0.2);
+    border-radius: 2px;
+    z-index: 2;
+  }
+
+  /* ── V4: Taller overlay extends past track ── */
+  .v4 .boost-fill {
+    position: absolute;
+    top: -3px;
+    height: calc(100% + 6px);
+    background: rgba(255,255,255,0.25);
+    border-radius: 3px;
+    z-index: 2;
+  }
+  .v4 .cut-void {
+    position: absolute;
+    top: -3px;
+    height: calc(100% + 6px);
+    background: #08080f;
+    border: 1px dashed rgba(255,255,255,0.2);
+    border-radius: 3px;
+    z-index: 2;
+  }
+
+</style>
+</head>
+<body>
+<h1>Refine Overlay — Focused</h1>
+<p class="page-desc">
+  Center-based fills (matching StrengthBars).<br>
+  <strong>Fill 1</strong> — gradient centered at 50%, width by base level (the AI/preset reference).<br>
+  <strong>Fill 2</strong> — boost: solid white on each side (added range). Cut: bg-void + dashed border on each side (removed range).<br>
+  No extra icons. Delta badge for precision.
+</p>
+
+<div class="grid" id="grid"></div>
+
+<script>
+// Center-based widths matching StrengthBars: low=25%, mid-low=40%, mid=55%, mid-high=70%, high=85%
+const LEVEL_WIDTHS = [25, 40, 55, 70, 85]; // index 0=level1, etc.
+// Half-widths from center (50%)
+const HALF_WIDTHS = LEVEL_WIDTHS.map(w => w / 2); // [12.5, 20, 27.5, 35, 42.5]
+
+// Tick positions for the marker dot (editor-style)
+const TICK_POS = [10, 30, 50, 70, 90];
+
+const bars = [
+  { label: 'Bass Presence', freq: '20–250 Hz', base: 2, current: 4 },     // boost +2
+  { label: 'Treble Detail', freq: '4–20 kHz',  base: 4, current: 2 },     // cut -2
+  { label: 'Warmth',        freq: '200–500 Hz', base: 3, current: 3 },     // unchanged
+  { label: 'Vocal Focus',   freq: '250 Hz–4 kHz', base: 3, current: 4 },   // boost +1
+  { label: 'Soundstage',    freq: 'Narrow → Wide', base: 5, current: 3 },  // cut -2
+  { label: 'Dynamic Range', freq: 'Comp → Exp', base: 3, current: 3 },     // unchanged
+];
+
+const variations = [
+  {
+    id: 'v1',
+    title: 'V1: Static, Standard',
+    desc: 'White fill at 30% for boost. Bg-void with muted dashed border for cut. Flush with track.',
+  },
+  {
+    id: 'v2',
+    title: 'V2: Brighter Boost',
+    desc: 'White fill at 50% — stronger contrast against the base gradient. Softer dashes on cut.',
+  },
+  {
+    id: 'v3',
+    title: 'V3: Subtle Pulse on Boost',
+    desc: 'Boost fill breathes slowly (3s, opacity 0.7–1.0). Cut stays static.',
+  },
+  {
+    id: 'v4',
+    title: 'V4: Taller Overlay',
+    desc: 'Zones extend 3px above and below the track. More prominent layered look.',
+  },
+];
+
+function renderBar(bar, track) {
+  const delta = bar.current - bar.base;
+  const baseHalf = HALF_WIDTHS[bar.base - 1];
+  const curHalf = HALF_WIDTHS[bar.current - 1];
+
+  // Fill 1: base reference — centered gradient at base level width
+  track.innerHTML += `<div class="base-fill" style="width:${LEVEL_WIDTHS[bar.base - 1]}%"></div>`;
+
+  if (delta === 0) return;
+
+  // The base fill spans [50 - baseHalf, 50 + baseHalf]
+  // The current fill would span [50 - curHalf, 50 + curHalf]
+  // Delta zones are the DIFFERENCE on each side
+
+  if (delta > 0) {
+    // Boost: added range on each side
+    // Left zone: from (50 - curHalf) to (50 - baseHalf)
+    const leftStart = 50 - curHalf;
+    const leftWidth = curHalf - baseHalf;
+    // Right zone: from (50 + baseHalf) to (50 + curHalf)
+    const rightStart = 50 + baseHalf;
+    const rightWidth = curHalf - baseHalf;
+
+    track.innerHTML += `<div class="boost-fill" style="left:${leftStart}%;width:${leftWidth}%"></div>`;
+    track.innerHTML += `<div class="boost-fill" style="left:${rightStart}%;width:${rightWidth}%"></div>`;
+  } else {
+    // Cut: removed range on each side (eats into base fill)
+    // Left void: from (50 - baseHalf) to (50 - curHalf)
+    const leftStart = 50 - baseHalf;
+    const leftWidth = baseHalf - curHalf;
+    // Right void: from (50 + curHalf) to (50 + baseHalf)
+    const rightStart = 50 + curHalf;
+    const rightWidth = baseHalf - curHalf;
+
+    track.innerHTML += `<div class="cut-void" style="left:${leftStart}%;width:${leftWidth}%"></div>`;
+    track.innerHTML += `<div class="cut-void" style="left:${rightStart}%;width:${rightWidth}%"></div>`;
+  }
+}
+
+const grid = document.getElementById('grid');
+
+variations.forEach(v => {
+  const card = document.createElement('div');
+  card.className = `card ${v.id}`;
+
+  let html = `<div class="card-title">${v.title}</div>`;
+  html += `<div class="card-desc">${v.desc}</div>`;
+
+  bars.forEach(bar => {
+    const delta = bar.current - bar.base;
+    const curPos = TICK_POS[bar.current - 1];
+    const deltaStr = delta > 0 ? `+${delta}` : delta < 0 ? `${delta}` : '\u2014';
+    const deltaClass = delta > 0 ? 'boost' : delta < 0 ? 'cut' : 'unchanged';
+
+    html += `<div class="bar-row">`;
+    html += `  <div class="bar-label">${bar.label}<span class="freq">${bar.freq}</span></div>`;
+    html += `  <div class="track">`;
+    TICK_POS.forEach(pos => {
+      html += `<div class="tick" style="left:${pos}%"></div>`;
+    });
+    html += `    <div class="marker" style="left:${curPos}%"></div>`;
+    html += `  </div>`;
+    html += `  <div class="delta-col ${deltaClass}">${deltaStr}</div>`;
+    html += `</div>`;
+  });
+
+  card.innerHTML = html;
+
+  card.querySelectorAll('.track').forEach((track, i) => {
+    renderBar(bars[i], track);
+  });
+
+  grid.appendChild(card);
+});
+</script>
+</body>
+</html>
